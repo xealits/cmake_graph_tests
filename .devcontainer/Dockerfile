@@ -8,6 +8,8 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm
 # COPY requirements.txt .
 
 # Install the required Python modules
+RUN pip install --upgrade pip
+RUN pip install black
 RUN pip install pydot
 
 # Copy the rest of your application code into the container
