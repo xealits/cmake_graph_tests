@@ -1,0 +1,20 @@
+[project]
+name = "cmake_graph_tests"
+version = "0.0.0"
+description = "Python project to try out ideas"
+readme = "README.md"
+authors = [
+  {name = "Alex Toldaiev", email = "oleksii.toldaiev@gmail.com"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = "~=3.12"
+dependencies = [
+    "pydot"
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
