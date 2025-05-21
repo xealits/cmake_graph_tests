@@ -6,8 +6,8 @@ import pydot
 
 dot_example = """
 graph my_graph {
-    bgcolor="yellow";
-    a [label="Foo"];
+    bgcolor="white";
+    a [label="Foo2", tooltip="tools 🥂", comment = "com"];
     b [shape=circle];
     a -- b -- c [color=blue];
 }
@@ -21,6 +21,4 @@ def cli():
 
 
 if __name__ == "__main__":
-    import doctest
-
-    exit(doctest.testmod(optionflags=doctest.ELLIPSIS)[0])
+    cli()

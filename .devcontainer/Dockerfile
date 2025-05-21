@@ -9,12 +9,12 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm
 
 RUN apt update
 RUN apt upgrade -y
-RUN apt install -y ack vim graphviz
+RUN apt install -y ack vim graphviz cmake
 
 # Install the required Python modules
 RUN pip install --upgrade pip
-RUN pip install black
-RUN pip install pydot
+RUN pip install black build
+RUN pip install pydot jsonschema
 
 # Copy the rest of your application code into the container
 # COPY . .
