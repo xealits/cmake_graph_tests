@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-cmake_graph = "cmake_graph.script:cli"
+cmake_graph = "cmake_graph.script:cmake_graph_cli"
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
