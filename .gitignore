@@ -3,3 +3,4 @@ dist/
 *.egg-info
 *.svg
 tryouts/
+.DS_Store
