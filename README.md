@@ -11,4 +11,4 @@ cmake_graph graph
 ls targetgraph-Release.svg
 ```
 
-![Targets of cmake_template](./examples/targetgraph-Release.svg)
+![Targets of cmake_template](./examples/targetgraph-Release_example.svg)
