@@ -8,6 +8,7 @@ from glob import glob
 from os.path import isfile, isdir, join, getctime
 import pydot
 from collections import defaultdict
+import re
 
 logging.basicConfig(level=logging.INFO)
 
@@ -89,7 +90,7 @@ class Target:
         return self._json["name"]
 
 
-def cmake_build_config_graph(config: dict, reply_dir: str):
+def cmake_build_config_graph(config: dict, reply_dir: str, skip_types: str = "", skip_names: str = ""):
     cfg_name = config["name"]
     projects = config["projects"]
     directories = config["directories"]
@@ -97,7 +98,9 @@ def cmake_build_config_graph(config: dict, reply_dir: str):
 
     targets_dict = {t_cfg["id"]: t_cfg for t_cfg in targets}
 
-    graph = pydot.Dot(f"targetgraph-{cfg_name}", graph_type="digraph", bgcolor="white")
+    graph = pydot.Dot(
+        f"targetgraph-{cfg_name}", graph_type="digraph", bgcolor="white", layout="sfdp"
+    )
 
     for t_cfg in targets:
         directory = directories[t_cfg["directoryIndex"]]
@@ -106,16 +109,24 @@ def cmake_build_config_graph(config: dict, reply_dir: str):
         t_json = t_cfg["jsonFile"]
         target = Target(join(reply_dir, t_json), project=project, directory=directory)
 
+        t_name = target.target_name()
+        t_type = target.type()
+
+        if skip_types and re.match(skip_types, t_type):
+            continue
+
+        if skip_names and re.match(skip_names, t_name):
+            continue
+
         # create the node and dependencies
         extra_info = []
-        extra_info.append(f"type={target.type()}")
+        extra_info.append(f"type={t_type}")
         extra_info.append(f"len(depends)={len(target.dependency_ids())}")
         extra_info.append(f"sources={'\n'.join(target.sources())}")
 
-        t_name = target.target_name()
         target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
-        if target.type() != "EXECUTABLE":
-            target_node.set_shape(node_shapes[target.type()])
+        if t_type != "EXECUTABLE":
+            target_node.set_shape(node_shapes[t_type])
         graph.add_node(target_node)
 
         # can it add edges before other nodes are known?
@@ -127,7 +138,7 @@ def cmake_build_config_graph(config: dict, reply_dir: str):
     return graph
 
 
-def cmake_api_process_reply(reply_dir: str):
+def cmake_api_process_reply(reply_dir: str, **kwargs):
     """cmake_api_process_reply(reply_dir: str)
 
     return graphs for all configurations returned by the codemodel-v2
@@ -149,7 +160,7 @@ def cmake_api_process_reply(reply_dir: str):
     # return target graphs for each config
     all_graphs = []
     for cfg in cmake_api_configs(full_fpath):
-        graph = cmake_build_config_graph(cfg, reply_dir)
+        graph = cmake_build_config_graph(cfg, reply_dir, **kwargs)
         all_graphs.append(graph)
 
     return all_graphs
@@ -177,6 +188,13 @@ def cmake_graph_cli():
         "-d", "--debug", action="store_true", help="DEBUG level of logging"
     )
 
+    parser.add_argument(
+        "--skip-types", type=str, default="", help="skip targets with types which match the regexp"
+    )
+    parser.add_argument(
+        "--skip-names", type=str, default="", help="skip targets with names which match the regexp"
+    )
+
     args = parser.parse_args()
 
     if args.debug:
@@ -190,7 +208,7 @@ def cmake_graph_cli():
 
     # make the graph from the reply
     reply_dir = cmake_api_get_reply_dir(args.build)
-    all_cfg_graphs = cmake_api_process_reply(reply_dir)
+    all_cfg_graphs = cmake_api_process_reply(reply_dir, skip_types=args.skip_types, skip_names=args.skip_names)
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
 

@@ -17,10 +17,12 @@ json_example = {
     ]
 }
 
+
 def example_dot():
     graphs = pydot.graph_from_dot_data(dot_example)
     graph = graphs[0]
     graph.write_svg("example_dot.svg")
+
 
 example_dot()
 
@@ -39,4 +41,3 @@ for tinfo in json_example["targets"]:
         graph.add_edge(dep_edge)
 
 graph.write_svg("example_json.svg")
-
