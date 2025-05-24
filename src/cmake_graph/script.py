@@ -121,6 +121,7 @@ def cmake_build_config_graph(
     project_graphs = []
     for pr in projects:
         pr_name = pr["name"]
+        pr_parent_index = pr.get("parentIndex")
         pr_graph = pydot.Cluster(
             # f"cluster_{pr_name}",
             pr_name,
@@ -129,14 +130,19 @@ def cmake_build_config_graph(
             layout=layout,
             style="dotted",
         )
-        graph.add_subgraph(pr_graph)
-        project_graphs.append(pr_graph)
+        project_graphs.append((pr_parent_index, pr_graph))
+
+    for parent_index, pr_graph in project_graphs:
+        if parent_index is None:
+            graph.add_subgraph(pr_graph)
+        else:
+            project_graphs[parent_index][1].add_subgraph(pr_graph)
 
     for t_model in targets:
         directory = directories[t_model["directoryIndex"]]
         project_index = t_model["projectIndex"]
         project = projects[project_index]
-        project_graph = project_graphs[project_index]
+        project_graph = project_graphs[project_index][1]
 
         t_json = t_model["jsonFile"]
         target = Target(
@@ -166,7 +172,7 @@ def cmake_build_config_graph(
     # can it add edges before other nodes are known?
     for target in targets_dict.values():
         project_index = target.project_index()
-        project_graph = project_graphs[project_index]
+        project_graph = project_graphs[project_index][1]
 
         for t_id in target.dependency_ids():
             dep_target = targets_dict[t_id]
