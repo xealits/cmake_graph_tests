@@ -121,15 +121,18 @@ def cmake_build_config_graph(
     project_graphs = []
     for pr in projects:
         pr_name = pr["name"]
-        pr_parent_index = pr.get("parentIndex")
+        dir_sources = [directories[i]["source"] for i in pr["directoryIndexes"]]
         pr_graph = pydot.Cluster(
             # f"cluster_{pr_name}",
             pr_name,
             label=pr_name,
+            tooltip="\n".join(dir_sources),
             bgcolor="white",
             layout=layout,
             style="dotted",
         )
+
+        pr_parent_index = pr.get("parentIndex")
         project_graphs.append((pr_parent_index, pr_graph))
 
     for parent_index, pr_graph in project_graphs:

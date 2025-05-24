@@ -11,38 +11,59 @@
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-372 922.74,-372 922.74,4 -4,4"/>
 <g id="clust1" class="cluster">
 <title>cluster_myproject</title>
+<g id="a_clust1"><a xlink:title=".&#10;configured_files&#10;src&#10;src/sample_library&#10;src/ftxui_sample">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="8.74,-8 8.74,-360 910.74,-360 910.74,-8 8.74,-8"/>
 <text text-anchor="middle" x="459.74" y="-344.8" font-family="Times,serif" font-size="14.00">myproject</text>
+</a>
+</g>
 </g>
 <g id="clust5" class="cluster">
 <title>cluster_CLI11</title>
+<g id="a_clust5"><a xlink:title="build/_deps/cli11&#45;src&#10;build/_deps/cli11&#45;src/fuzz&#10;build/_deps/cli11&#45;src/src&#10;build/_deps/cli11&#45;src/single&#45;include">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="162.74,-171 162.74,-246 272.74,-246 272.74,-171 162.74,-171"/>
 <text text-anchor="middle" x="217.74" y="-230.8" font-family="Times,serif" font-size="14.00">CLI11</text>
+</a>
+</g>
 </g>
 <g id="clust6" class="cluster">
 <title>cluster_ftxui</title>
+<g id="a_clust6"><a xlink:title="build/_deps/ftxui&#45;src&#10;build/_deps/ftxui&#45;src/examples&#10;build/_deps/ftxui&#45;src/doc">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="280.74,-16 280.74,-246 430.74,-246 430.74,-16 280.74,-16"/>
 <text text-anchor="middle" x="355.74" y="-230.8" font-family="Times,serif" font-size="14.00">ftxui</text>
+</a>
+</g>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_FMT</title>
+<g id="a_clust2"><a xlink:title="build/_deps/fmt&#45;src">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="46.74,-88 46.74,-163 120.74,-163 120.74,-88 46.74,-88"/>
 <text text-anchor="middle" x="83.74" y="-147.8" font-family="Times,serif" font-size="14.00">FMT</text>
+</a>
+</g>
 </g>
 <g id="clust3" class="cluster">
 <title>cluster_spdlog</title>
+<g id="a_clust3"><a xlink:title="build/_deps/spdlog&#45;src">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="48.74,-171 48.74,-246 154.74,-246 154.74,-171 48.74,-171"/>
 <text text-anchor="middle" x="101.74" y="-230.8" font-family="Times,serif" font-size="14.00">spdlog</text>
+</a>
+</g>
 </g>
 <g id="clust4" class="cluster">
 <title>cluster_Catch2</title>
+<g id="a_clust4"><a xlink:title="build/_deps/catch2&#45;src&#10;build/_deps/catch2&#45;src/src">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="452.74,-88 452.74,-246 660.74,-246 660.74,-88 452.74,-88"/>
 <text text-anchor="middle" x="556.74" y="-230.8" font-family="Times,serif" font-size="14.00">Catch2</text>
+</a>
+</g>
 </g>
 <g id="clust8" class="cluster">
 <title>cluster_CmakeConfigPackageTests</title>
+<g id="a_clust8"><a xlink:title="test">
 <polygon fill="white" stroke="black" stroke-dasharray="1,5" points="338.74,-254 338.74,-329 902.74,-329 902.74,-254 338.74,-254"/>
 <text text-anchor="middle" x="620.74" y="-313.8" font-family="Times,serif" font-size="14.00">CmakeConfigPackageTests</text>
+</a>
+</g>
 </g>
 <!-- fmt -->
 <g id="node1" class="node">
