@@ -9,6 +9,27 @@ graph my_graph {
 }
 """
 
+dot_example2 = """
+digraph G {
+  compound=true;
+  subgraph cluster0 {
+    a -> b;
+    a -> c;
+    b -> d;
+    c -> d;
+  }
+  subgraph cluster1 {
+    e -> g;
+    e -> f;
+  }
+  b -> f [lhead=cluster1];
+  d -> e;
+  c -> g [ltail=cluster0,lhead=cluster1];
+  c -> e [ltail=cluster0];
+  d -> h;
+}
+"""
+
 json_example = {
     "targets": [
         {"name": "foo", "depends": ["bar", "baz"]},
@@ -19,7 +40,7 @@ json_example = {
 
 
 def example_dot():
-    graphs = pydot.graph_from_dot_data(dot_example)
+    graphs = pydot.graph_from_dot_data(dot_example2)
     graph = graphs[0]
     graph.write_svg("example_dot.svg")
 

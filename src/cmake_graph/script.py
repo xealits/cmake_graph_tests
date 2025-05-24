@@ -14,10 +14,12 @@ logging.basicConfig(level=logging.INFO)
 
 CMAKE_API_CLIENT_NAME = "targetgraph"
 CMAKE_API_PATH = ".cmake/api/v1/"
+GRAPHVIZ_LAYOUT_DEFAULT = "dot"
 
 node_shapes = defaultdict(lambda: "septagon")
 node_shapes.update(
     {
+        "EXECUTABLE": "egg",
         "STATIC_LIBRARY": "octagon",
         "INTERFACE_LIBRARY": "pentagon",
         "SHARED_LIBRARY": "doubleoctagon",
@@ -63,11 +65,12 @@ def cmake_api_projects_directories_targets(codemodel_cfg: dict):
 
 
 class Target:
-    def __init__(self, json_fpath, project=None, directory=None):
+    def __init__(self, json_fpath, codemodel_json, project=None, directory=None):
         assert isfile(json_fpath)
         with open(json_fpath, "r") as f:
             self._json = json.load(f)
 
+        self._codemodel = codemodel_json
         self.project = project
         self.directory = directory
 
@@ -89,25 +92,57 @@ class Target:
     def target_name(self):
         return self._json["name"]
 
+    def project_index(self):
+        return self._codemodel["projectIndex"]
 
-def cmake_build_config_graph(config: dict, reply_dir: str, skip_types: str = "", skip_names: str = ""):
+
+def cmake_build_config_graph(
+    config: dict,
+    reply_dir: str,
+    skip_types: str = "",
+    skip_names: str = "",
+    layout: str = GRAPHVIZ_LAYOUT_DEFAULT,
+):
     cfg_name = config["name"]
     projects = config["projects"]
     directories = config["directories"]
     targets = config["targets"]
 
-    targets_dict = {t_cfg["id"]: t_cfg for t_cfg in targets}
+    targets_dict = {}  # {t_model["id"]: t_model for t_model in targets}
 
     graph = pydot.Dot(
-        f"targetgraph-{cfg_name}", graph_type="digraph", bgcolor="white", layout="sfdp"
+        f"targetgraph-{cfg_name}",
+        graph_type="digraph",
+        bgcolor="white",
+        layout=layout,
+        compound=True,
     )
 
-    for t_cfg in targets:
-        directory = directories[t_cfg["directoryIndex"]]
-        project = projects[t_cfg["projectIndex"]]
+    project_graphs = []
+    for pr in projects:
+        pr_name = pr["name"]
+        pr_graph = pydot.Cluster(
+            # f"cluster_{pr_name}",
+            pr_name,
+            label=pr_name,
+            bgcolor="white",
+            layout=layout,
+            style="dotted",
+        )
+        graph.add_subgraph(pr_graph)
+        project_graphs.append(pr_graph)
 
-        t_json = t_cfg["jsonFile"]
-        target = Target(join(reply_dir, t_json), project=project, directory=directory)
+    for t_model in targets:
+        directory = directories[t_model["directoryIndex"]]
+        project_index = t_model["projectIndex"]
+        project = projects[project_index]
+        project_graph = project_graphs[project_index]
+
+        t_json = t_model["jsonFile"]
+        target = Target(
+            join(reply_dir, t_json), t_model, project=project, directory=directory
+        )
+        targets_dict[target.target_id()] = target
 
         t_name = target.target_name()
         t_type = target.type()
@@ -125,15 +160,23 @@ def cmake_build_config_graph(config: dict, reply_dir: str, skip_types: str = "",
         extra_info.append(f"sources={'\n'.join(target.sources())}")
 
         target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
-        if t_type != "EXECUTABLE":
-            target_node.set_shape(node_shapes[t_type])
-        graph.add_node(target_node)
+        target_node.set_shape(node_shapes[t_type])
+        project_graph.add_node(target_node)
 
-        # can it add edges before other nodes are known?
+    # can it add edges before other nodes are known?
+    for target in targets_dict.values():
+        project_index = target.project_index()
+        project_graph = project_graphs[project_index]
+
         for t_id in target.dependency_ids():
-            dep_name = targets_dict[t_id]["name"]
-            dep_edge = pydot.Edge(t_name, dep_name, style="dashed")
-            graph.add_edge(dep_edge)
+            dep_target = targets_dict[t_id]
+            dep_name = dep_target.target_name()
+            dep_edge = pydot.Edge(target.target_name(), dep_name, style="dashed")
+
+            if project_index == dep_target.project_index():
+                project_graph.add_edge(dep_edge)
+            else:
+                graph.add_edge(dep_edge)
 
     return graph
 
@@ -189,10 +232,23 @@ def cmake_graph_cli():
     )
 
     parser.add_argument(
-        "--skip-types", type=str, default="", help="skip targets with types which match the regexp"
+        "--skip-types",
+        type=str,
+        default="",
+        help="skip targets with types which match the regexp",
     )
     parser.add_argument(
-        "--skip-names", type=str, default="", help="skip targets with names which match the regexp"
+        "--skip-names",
+        type=str,
+        default="",
+        help="skip targets with names which match the regexp",
+    )
+
+    parser.add_argument(
+        "--layout",
+        type=str,
+        default=GRAPHVIZ_LAYOUT_DEFAULT,
+        help=f"graphviz layout engine ({GRAPHVIZ_LAYOUT_DEFAULT})",
     )
 
     args = parser.parse_args()
@@ -208,9 +264,15 @@ def cmake_graph_cli():
 
     # make the graph from the reply
     reply_dir = cmake_api_get_reply_dir(args.build)
-    all_cfg_graphs = cmake_api_process_reply(reply_dir, skip_types=args.skip_types, skip_names=args.skip_names)
+    all_cfg_graphs = cmake_api_process_reply(
+        reply_dir,
+        skip_types=args.skip_types,
+        skip_names=args.skip_names,
+        layout=args.layout,
+    )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
+        graph.write_raw(f"{graph.get_name()}.dot")
 
 
 if __name__ == "__main__":
