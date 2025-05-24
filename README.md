@@ -7,8 +7,8 @@ cd cmake_template
 cmake_graph setup
 cmake -S . -B build
 ...
-cmake_graph graph
+cmake_graph graph --skip-types UTILITY --skip-names test_
 ls targetgraph-Release.svg
 ```
 
-![Targets of cmake_template](./examples/targetgraph-Release_example.svg)
+![Targets of cmake_template](./examples/targetgraph-Release_cmake_template.svg)
