@@ -103,6 +103,25 @@ class Target:
         destinations = [d for d in install["destinations"]]
         return [join(prefix, d["path"]) for d in destinations]
 
+    def find_cmake_define(self):
+        bg = self._json["backtraceGraph"]
+        def_commands = ("add_executable", "add_library")
+        definitions = [(i, com) for i, com in enumerate(bg["commands"]) if com in def_commands]
+        if not definitions:
+            return None
+
+        assert len(definitions) == 1
+        def_index, def_com = definitions[0]
+
+        for node in bg["nodes"]:
+            if node.get("command") == def_index:
+                def_info = node
+                break
+        def_file = bg["files"][def_info["file"]]
+        def_line = def_info["line"]
+
+        return def_com, def_file, def_line
+
     def make_graph(self):
         t_name = self.target_name()
         t_type = self.type()
@@ -110,6 +129,10 @@ class Target:
         # create the node and dependencies
         extra_info = []
         extra_info.append(f"type={t_type}")
+        definition = self.find_cmake_define()
+        if definition:
+            com, fname, line = definition
+            extra_info.append(f"{com} @ {fname}:{line}")
         extra_info.append(f"len(depends)={len(self.dependency_ids())}")
         installs = self.target_install_paths()
         if installs:
