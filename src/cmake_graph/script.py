@@ -305,10 +305,15 @@ def cmake_build_config_graph(
                 f"check full deps: {target.target_name()} {dep_proj_id} in {full_project_dependencies}"
             )
 
+            edge_tooltip = ""
             if perproject and full_dep and project_index != dep_target.project_index():
                 dep_name = f"HOOK_{project_graphs[dep_proj_ind][1].get_name()}"
+                dep_proj_name = project_graphs[dep_proj_ind][1].get_label()
+                edge_tooltip = f"all targets from\n{dep_proj_name}"
 
-            dep_edge = pydot.Edge(target.target_name(), dep_name, style=edge_style)
+            dep_edge = pydot.Edge(
+                target.target_name(), dep_name, style=edge_style, tooltip=edge_tooltip
+            )
 
             if perproject and full_dep:
                 # dep_proj_name = projects[dep_proj_id]["name"]
@@ -424,7 +429,7 @@ def cmake_graph_cli():
         skip_types=args.skip_types,
         skip_names=args.skip_names,
         layout=args.layout,
-        perproject=not args.no_perproject
+        perproject=not args.no_perproject,
     )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
