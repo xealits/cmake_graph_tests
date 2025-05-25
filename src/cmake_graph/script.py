@@ -65,12 +65,15 @@ def cmake_api_projects_directories_targets(codemodel_cfg: dict):
 
 
 class Target:
-    def __init__(self, json_fpath, codemodel_json, project=None, directory=None):
+    def __init__(
+        self, json_fpath, target_codemodel, codemodel, project=None, directory=None
+    ):
         assert isfile(json_fpath)
         with open(json_fpath, "r") as f:
             self._json = json.load(f)
 
-        self._codemodel = codemodel_json
+        self._target_codemodel = target_codemodel
+        self._codemodel = codemodel
         self.project = project
         self.directory = directory
 
@@ -98,6 +101,14 @@ class Target:
     def dependency_ids(self):
         return [dep["id"] for dep in self._json.get("dependencies", [])]
 
+    def dependency_indexes(self):
+        inds = []
+        dep_ids = self.dependency_ids()
+        for i, t_model in enumerate(self._codemodel["targets"]):
+            if t_model["id"] in dep_ids:
+                inds.append(i)
+        return inds
+
     def target_id(self):
         return self._json["id"]
 
@@ -105,7 +116,7 @@ class Target:
         return self._json["name"]
 
     def project_index(self):
-        return self._codemodel["projectIndex"]
+        return self._target_codemodel["projectIndex"]
 
     def target_install_paths(self):
         install = self._json.get("install")
@@ -118,7 +129,9 @@ class Target:
     def find_cmake_define(self):
         bg = self._json["backtraceGraph"]
         def_commands = ("add_executable", "add_library")
-        definitions = [(i, com) for i, com in enumerate(bg["commands"]) if com in def_commands]
+        definitions = [
+            (i, com) for i, com in enumerate(bg["commands"]) if com in def_commands
+        ]
         if not definitions:
             return None
 
@@ -168,16 +181,16 @@ class Target:
 
 
 def cmake_build_config_graph(
-    config: dict,
+    codemodel: dict,
     reply_dir: str,
     skip_types: str = "",
     skip_names: str = "",
     layout: str = GRAPHVIZ_LAYOUT_DEFAULT,
 ):
-    cfg_name = config["name"]
-    projects = config["projects"]
-    directories = config["directories"]
-    targets = config["targets"]
+    cfg_name = codemodel["name"]
+    projects = codemodel["projects"]
+    directories = codemodel["directories"]
+    targets = codemodel["targets"]
 
     targets_dict = {}  # {t_model["id"]: t_model for t_model in targets}
 
@@ -203,6 +216,14 @@ def cmake_build_config_graph(
             style="dotted",
         )
 
+        # add a dummy invisible node per cluster
+        # in the case we need an edge pointing at the whole project
+        # like when all targets of the project are used
+        project_node = pydot.Node(
+            f"HOOK_{pr_graph.get_name()}", shape="point", style="invis"
+        )
+        pr_graph.add_node(project_node)
+
         pr_parent_index = pr.get("parentIndex")
         project_graphs.append((pr_parent_index, pr_graph))
 
@@ -222,7 +243,7 @@ def cmake_build_config_graph(
             bgcolor="white",
             layout=layout,
             style="dotted",
-            penwidth=0
+            penwidth=0,
         )
 
         project_graphs[dir_info["projectIndex"]][1].add_subgraph(dir_graph)
@@ -230,12 +251,15 @@ def cmake_build_config_graph(
 
     for t_model in targets:
         dir_index = t_model["directoryIndex"]
-        project_index = t_model["projectIndex"]
-        project = projects[project_index]
+        project = projects[t_model["projectIndex"]]
 
         t_json = t_model["jsonFile"]
         target = Target(
-            join(reply_dir, t_json), t_model, project=project, directory=directories[dir_index]
+            join(reply_dir, t_json),
+            target_codemodel=t_model,
+            codemodel=codemodel,
+            project=project,
+            directory=directories[dir_index],
         )
         targets_dict[target.target_id()] = target
 
@@ -248,26 +272,59 @@ def cmake_build_config_graph(
         if skip_names and re.match(skip_names, t_name):
             continue
 
-        #project_graph = project_graphs[project_index][1]
-        #project_graph.add_node(target.make_graph())
-
         dir_graph = directory_graphs[dir_index]
         dir_graph.add_node(target.make_graph())
 
-    # can it add edges before other nodes are known?
     for target in targets_dict.values():
         project_index = target.project_index()
         project_graph = project_graphs[project_index][1]
+        target_dep_ids = target.dependency_ids()
+        target_dep_indexes = target.dependency_indexes()
 
-        for t_id in target.dependency_ids():
-            dep_target = targets_dict[t_id]
+        full_project_dependencies = set()
+        for dep_id in target_dep_ids:
+            # if dependencies include all targets of a project
+            # then depend on the whole project
+            # - add lhead=cluester name
+            dep_proj_ind = targets_dict[dep_id].project_index()
+            dep_proj_id = project_graphs[dep_proj_ind][1].get_name()
+
+            dep_proj_target_inds = projects[dep_proj_ind]["targetIndexes"]
+            logging.debug(
+                f"check full deps: {target.target_name()} & {target_dep_indexes} VS {dep_proj_id} & {dep_proj_target_inds}"
+            )
+            full_dep = all(i in target_dep_indexes for i in dep_proj_target_inds)
+
+            dep_target = targets_dict[dep_id]
             dep_name = dep_target.target_name()
-            dep_edge = pydot.Edge(target.target_name(), dep_name, style="dashed")
+            edge_style = (
+                "invis" if dep_proj_id in full_project_dependencies else "dashed"
+            )
+            logging.debug(
+                f"check full deps: {target.target_name()} {dep_proj_id} in {full_project_dependencies}"
+            )
+
+            if full_dep and project_index != dep_target.project_index():
+                dep_name = f"HOOK_{project_graphs[dep_proj_ind][1].get_name()}"
+
+            dep_edge = pydot.Edge(target.target_name(), dep_name, style=edge_style)
+
+            if full_dep:
+                # dep_proj_name = projects[dep_proj_id]["name"]
+                dep_edge.set_lhead(dep_proj_id)
+                full_project_dependencies.add(dep_proj_id)
+                logging.debug(
+                    f"full deps now: {target.target_name()} {full_project_dependencies}"
+                )
 
             if project_index == dep_target.project_index():
                 project_graph.add_edge(dep_edge)
             else:
                 graph.add_edge(dep_edge)
+
+            logging.debug(
+                f"Added node dep: {target.target_name()} {dep_name} : {target_dep_indexes} - {dep_proj_target_inds}"
+            )
 
     return graph
 
