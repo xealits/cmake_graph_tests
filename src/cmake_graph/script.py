@@ -95,6 +95,32 @@ class Target:
     def project_index(self):
         return self._codemodel["projectIndex"]
 
+    def target_install_paths(self):
+        install = self._json.get("install")
+        if install is None:
+            return None
+        prefix = install["prefix"]["path"]
+        destinations = [d for d in install["destinations"]]
+        return [join(prefix, d["path"]) for d in destinations]
+
+    def make_graph(self):
+        t_name = self.target_name()
+        t_type = self.type()
+
+        # create the node and dependencies
+        extra_info = []
+        extra_info.append(f"type={t_type}")
+        extra_info.append(f"len(depends)={len(self.dependency_ids())}")
+        installs = self.target_install_paths()
+        if installs:
+            extra_info.append(f"installs:\n{'\n'.join(installs)}")
+        extra_info.append(f"sources:\n{'\n'.join(self.sources())}")
+
+        target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
+        target_node.set_shape(node_shapes[t_type])
+
+        return target_node
+
 
 def cmake_build_config_graph(
     config: dict,
@@ -162,15 +188,7 @@ def cmake_build_config_graph(
         if skip_names and re.match(skip_names, t_name):
             continue
 
-        # create the node and dependencies
-        extra_info = []
-        extra_info.append(f"type={t_type}")
-        extra_info.append(f"len(depends)={len(target.dependency_ids())}")
-        extra_info.append(f"sources={'\n'.join(target.sources())}")
-
-        target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
-        target_node.set_shape(node_shapes[t_type])
-        project_graph.add_node(target_node)
+        project_graph.add_node(target.make_graph())
 
     # can it add edges before other nodes are known?
     for target in targets_dict.values():
