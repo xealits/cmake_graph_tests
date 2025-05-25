@@ -80,6 +80,18 @@ class Target:
     def sources(self):
         return [src["path"] for src in self._json.get("sources", [])]
 
+    def compile_groups(self):
+        cmp_info = []
+        sources = self.sources()
+        for cmp in self._json.get("compileGroups", []):
+            info = {
+                "sources": [sources[i] for i in cmp["sourceIndexes"]],
+                "includes": [i["path"] for i in cmp.get("includes", [])],
+                "defines": [i["define"] for i in cmp.get("defines", [])],
+            }
+            cmp_info.append(info)
+        return cmp_info
+
     def cmake_lists(self):
         return self._json["backtraceGraph"]["files"]
 
@@ -129,15 +141,25 @@ class Target:
         # create the node and dependencies
         extra_info = []
         extra_info.append(f"type={t_type}")
+
         definition = self.find_cmake_define()
         if definition:
             com, fname, line = definition
             extra_info.append(f"{com} @ {fname}:{line}")
+
         extra_info.append(f"len(depends)={len(self.dependency_ids())}")
+
         installs = self.target_install_paths()
         if installs:
             extra_info.append(f"installs:\n{'\n'.join(installs)}")
-        extra_info.append(f"sources:\n{'\n'.join(self.sources())}")
+
+        compile_groups = self.compile_groups()
+        if compile_groups:
+            extra_info.append("compile_groups:")
+        for cmp in compile_groups:
+            extra_info.append("\n".join(["includes:"] + cmp["includes"]))
+            extra_info.append("\n".join(["defines:"] + cmp["defines"]))
+            extra_info.append("\n".join(["sources:"] + cmp["sources"]))
 
         target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
         target_node.set_shape(node_shapes[t_type])
