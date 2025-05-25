@@ -161,6 +161,13 @@ class Target:
             extra_info.append(f"{com} @ {fname}:{line}")
 
         extra_info.append(f"len(depends)={len(self.dependency_ids())}")
+        dep_defs = []
+        for dep_ind in self.dependency_indexes():
+            dep_model = self._codemodel["targets"][dep_ind]
+            dep_proj_ind = dep_model["projectIndex"]
+            dep_proj_name = self._codemodel["projects"][dep_proj_ind]["name"]
+            dep_defs.append(f"{dep_proj_name}: {dep_model["name"]}")
+        extra_info.append("\n".join(["deps:"] + sorted(dep_defs)))
 
         installs = self.target_install_paths()
         if installs:
@@ -201,6 +208,7 @@ def cmake_build_config_graph(
         bgcolor="white",
         layout=layout,
         compound=True,
+        rankdir="LR"
     )
 
     project_graphs = []
@@ -241,7 +249,7 @@ def cmake_build_config_graph(
             dir_source,
             label=f"📁 {dir_source}",
             labeljust="l",
-            bgcolor="white",
+            bgcolor="yellow",
             layout=layout,
             style="dotted",
             penwidth=0,
