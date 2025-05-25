@@ -212,15 +212,30 @@ def cmake_build_config_graph(
         else:
             project_graphs[parent_index][1].add_subgraph(pr_graph)
 
+    directory_graphs = []
+    for dir_info in directories:
+        dir_source = dir_info["source"]
+        dir_graph = pydot.Cluster(
+            dir_source,
+            label=f"📁 {dir_source}",
+            labeljust="l",
+            bgcolor="white",
+            layout=layout,
+            style="dotted",
+            penwidth=0
+        )
+
+        project_graphs[dir_info["projectIndex"]][1].add_subgraph(dir_graph)
+        directory_graphs.append(dir_graph)
+
     for t_model in targets:
-        directory = directories[t_model["directoryIndex"]]
+        dir_index = t_model["directoryIndex"]
         project_index = t_model["projectIndex"]
         project = projects[project_index]
-        project_graph = project_graphs[project_index][1]
 
         t_json = t_model["jsonFile"]
         target = Target(
-            join(reply_dir, t_json), t_model, project=project, directory=directory
+            join(reply_dir, t_json), t_model, project=project, directory=directories[dir_index]
         )
         targets_dict[target.target_id()] = target
 
@@ -233,7 +248,11 @@ def cmake_build_config_graph(
         if skip_names and re.match(skip_names, t_name):
             continue
 
-        project_graph.add_node(target.make_graph())
+        #project_graph = project_graphs[project_index][1]
+        #project_graph.add_node(target.make_graph())
+
+        dir_graph = directory_graphs[dir_index]
+        dir_graph.add_node(target.make_graph())
 
     # can it add edges before other nodes are known?
     for target in targets_dict.values():
