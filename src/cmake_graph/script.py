@@ -186,6 +186,7 @@ def cmake_build_config_graph(
     skip_types: str = "",
     skip_names: str = "",
     layout: str = GRAPHVIZ_LAYOUT_DEFAULT,
+    perproject=True,
 ):
     cfg_name = codemodel["name"]
     projects = codemodel["projects"]
@@ -304,12 +305,12 @@ def cmake_build_config_graph(
                 f"check full deps: {target.target_name()} {dep_proj_id} in {full_project_dependencies}"
             )
 
-            if full_dep and project_index != dep_target.project_index():
+            if perproject and full_dep and project_index != dep_target.project_index():
                 dep_name = f"HOOK_{project_graphs[dep_proj_ind][1].get_name()}"
 
             dep_edge = pydot.Edge(target.target_name(), dep_name, style=edge_style)
 
-            if full_dep:
+            if perproject and full_dep:
                 # dep_proj_name = projects[dep_proj_id]["name"]
                 dep_edge.set_lhead(dep_proj_id)
                 full_project_dependencies.add(dep_proj_id)
@@ -399,6 +400,12 @@ def cmake_graph_cli():
         help=f"graphviz layout engine ({GRAPHVIZ_LAYOUT_DEFAULT})",
     )
 
+    parser.add_argument(
+        "--no-perproject",
+        action="store_true",
+        help=f"don't merge per-project edges",
+    )
+
     args = parser.parse_args()
 
     if args.debug:
@@ -417,6 +424,7 @@ def cmake_graph_cli():
         skip_types=args.skip_types,
         skip_names=args.skip_names,
         layout=args.layout,
+        perproject=not args.no_perproject
     )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
