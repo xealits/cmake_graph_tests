@@ -607,6 +607,13 @@ def cmake_graph_cli():
     )
 
     parser.add_argument(
+        "--frequent-deps-threshold",
+        type=int,
+        default=5,
+        help=f"threshold to start embedding frequently used dependencies",
+    )
+
+    parser.add_argument(
         "--no-perproject",
         action="store_true",
         help=f"don't merge per-project edges",
@@ -631,6 +638,7 @@ def cmake_graph_cli():
         skip_names=args.skip_names,
         layout=args.layout,
         perproject=not args.no_perproject,
+        frequent_deps_threshold=args.frequent_deps_threshold
     )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
