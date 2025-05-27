@@ -33,7 +33,7 @@ node_shapes.update(
 
 class GenerateLetters:
     # greek_codes   = chain(range(0x370, 0x3e2), range(0x3f0, 0x400))
-    greek_codes   = chain(range(0x3B1, 0x3CA), range(0x391, 0x3AA))
+    greek_codes = chain(range(0x3B1, 0x3CA), range(0x391, 0x3AA))
     greek_symbols = (chr(c) for c in greek_codes)
     greek_letters = [c for c in greek_symbols if c.isalpha()]
 
@@ -83,7 +83,7 @@ def cmake_api_projects_directories_targets(codemodel_cfg: dict):
     )
 
 
-Dependence = namedtuple("Dependence", "source to")
+Dependence = namedtuple("Dependence", "source to graph full_dep")
 
 
 class Project:
@@ -134,7 +134,7 @@ class Project:
             tooltip="\n".join(dir_sources),
             bgcolor=bgcolor,
             layout=layout,
-            style=style
+            style=style,
         )
 
         # add a dummy invisible node per cluster
@@ -142,8 +142,9 @@ class Project:
         # like when all targets of the project are used
         project_node = pydot.Node(
             f"PROJNODE_{pr_graph.get_name()}",
-            label = self.name(),
-            shape="point", style="invis"
+            label=self.name(),
+            shape="point",
+            style="invis",
         )
         pr_graph.add_node(project_node)
         self._project_node = project_node
@@ -210,9 +211,35 @@ class Target:
         self.project = codemodel["projects"][self.project_index()]
         self.directory = codemodel["directories"][self.directory_index()]
         self._label = self.target_name()
+        self._graph = None
+        self._marker = None
+        self._usage_count = 0
+        self._dep_markers = []
 
     def set_label(self, label):
         self._label = label
+
+        if self._graph is None:
+            return
+
+        if self._dep_markers:
+            graph_label = label + "\n" + " ".join(self._dep_markers)
+        else:
+            graph_label = label
+
+        self._graph.set_label(graph_label)
+
+    def add_dep_marker(self, dep_mark):
+        self._dep_markers.append(dep_mark)
+        self.set_label(self._label)
+
+    def set_marker(self, marker, usage_count):
+        self._marker = marker
+        self._usage_count = usage_count
+        self.set_label(f"@{marker}({usage_count}) {self._label}")
+
+    def get_marker(self):
+        return self._marker
 
     def type(self):
         return self._json["type"]
@@ -287,7 +314,10 @@ class Target:
 
         return def_com, def_file, def_line
 
-    def make_graph(self):
+    def get_graph(self):
+        if self._graph is not None:
+            return self._graph
+
         t_name = self.target_name()
         t_type = self.type()
 
@@ -321,10 +351,14 @@ class Target:
             extra_info.append("\n".join(["defines:"] + cmp["defines"]))
             extra_info.append("\n".join(["sources:"] + cmp["sources"]))
 
-        target_node = pydot.Node(t_name, label=self._label, tooltip="\n".join(extra_info))
+        target_node = pydot.Node(
+            t_name, label=self._label, tooltip="\n".join(extra_info)
+        )
         target_node.set_shape(node_shapes[t_type])
 
-        return target_node
+        self._graph = target_node
+        self.set_label(self._label)
+        return self._graph
 
 
 def cmake_build_config_graph(
@@ -334,6 +368,7 @@ def cmake_build_config_graph(
     skip_names: str = "",
     layout: str = GRAPHVIZ_LAYOUT_DEFAULT,
     perproject=True,
+    frequent_deps_threshold=5,
 ):
     cfg_name = codemodel["name"]
     # projects = codemodel["projects"]
@@ -346,7 +381,7 @@ def cmake_build_config_graph(
         bgcolor="white",
         layout=layout,
         compound=True,
-        rankdir="LR"
+        rankdir="LR",
     )
 
     projects = []
@@ -364,7 +399,9 @@ def cmake_build_config_graph(
     for dir_model in codemodel["directories"]:
         directory = Directory(dir_model, codemodel, reply_dir)
         directories.append(directory)
-        projects[directory.project_index()].get_graph().add_subgraph(directory.get_graph())
+        projects[directory.project_index()].get_graph().add_subgraph(
+            directory.get_graph()
+        )
 
     targets_dict = {}  # {t_model["id"]: t_model for t_model in targets}
     for t_model in codemodel["targets"]:
@@ -385,8 +422,9 @@ def cmake_build_config_graph(
             continue
 
         directory = directories[target.directory_index()]
-        directory.get_graph().add_node(target.make_graph())
+        directory.get_graph().add_node(target.get_graph())
 
+    dependencies = []
     for target in targets_dict.values():
         project = projects[target.project_index()]
         target_dep_ids = target.dependency_ids()
@@ -402,7 +440,6 @@ def cmake_build_config_graph(
 
             full_dep = dep_proj.full_dependence(target)
 
-            dep_name = dep_target.target_name()
             edge_style = (
                 "invis" if dep_proj_id in full_project_dependencies else "dashed"
             )
@@ -411,30 +448,90 @@ def cmake_build_config_graph(
             )
 
             edge_tooltip = ""
-            if perproject and full_dep and target.project_index() != dep_target.project_index():
+            dep_name = dep_target.target_name()
+            if (
+                perproject
+                and full_dep
+                and target.project_index() != dep_target.project_index()
+            ):
                 dep_name = dep_proj.get_project_node().get_name()
                 dep_proj_name = dep_proj.get_project_node().get_label()
                 edge_tooltip = f"all targets from\n{dep_proj_name}"
 
-            dep_edge = pydot.Edge(
-                target.target_name(), dep_name, style=edge_style, tooltip=edge_tooltip
-            )
+            # dep_edge = pydot.Edge(
+            #    target.target_name(), dep_name, style=edge_style, tooltip=edge_tooltip
+            # )
 
-            if perproject and full_dep:
-                dep_edge.set_lhead(dep_proj_id)
-                full_project_dependencies.add(dep_proj_id)
-                logging.debug(
-                    f"full deps now: {target.target_name()} {full_project_dependencies}"
-                )
+            # if perproject and full_dep:
+            #    dep_edge.set_lhead(dep_proj_id)
+            #    full_project_dependencies.add(dep_proj_id)
+            #    logging.debug(
+            #        f"full deps now: {target.target_name()} {full_project_dependencies}"
+            #    )
 
             if target.project_index() == dep_target.project_index():
-                project.get_graph().add_edge(dep_edge)
+                # project.get_graph().add_edge(dep_edge)
+                graph_for_edge = project.get_graph()
             else:
-                graph.add_edge(dep_edge)
+                # graph.add_edge(dep_edge)
+                graph_for_edge = graph
+
+            dep = Dependence(
+                target,
+                dep_target,
+                graph=graph_for_edge,
+                full_dep=(perproject and full_dep),
+            )
+            dependencies.append(dep)
 
             logging.debug(
                 f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"
             )
+
+    # if there are many dependencies on a target
+    # "embed" it into dependants: add a symbol to the label, or add special nodes etc
+    frequent_dependencies = set()
+    icon_generator = GenerateLetters()
+    deps = [dep.to for dep in dependencies]
+    for target in targets_dict.values():
+        usage_count = deps.count(target)
+        if usage_count > frequent_deps_threshold:
+            frequent_dependencies.add(target)
+            icon = icon_generator.next()
+            target.set_marker(icon, usage_count)
+            # or use the node fontcolor
+
+    full_project_dependencies = set()
+    for target, to, edge_graph, full_dep in dependencies:
+        same_dir = target.directory_index() == to.directory_index()
+        if to in frequent_dependencies and not same_dir:
+            marker = to.get_marker()
+            assert marker is not None
+            target.add_dep_marker(marker)
+            continue
+
+        # not frequent dependencies get turned into edges
+
+        # check if it's a full-project dep
+        edge_style = "dashed"
+        edge_tooltip = ""
+        if full_dep:
+            dep_proj_name = projects[to.project_index()].name()
+            edge_tooltip = f"all targets from\n{dep_proj_name}"
+            dep_proj_ind = to.project_index()
+
+            if (target, dep_proj_ind) in full_project_dependencies:
+                edge_style = "invis"
+            else:
+                full_project_dependencies.add((target, dep_proj_ind))
+
+        dep_edge = pydot.Edge(
+            target.target_name(),
+            to.get_graph().get_name(),
+            style=edge_style,
+            tooltip=edge_tooltip,
+        )
+        edge_graph.add_edge(dep_edge)
 
     return graph
 
