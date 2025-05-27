@@ -137,8 +137,8 @@
 </a>
 </g>
 </g>
-<!-- HOOK_cluster_myproject -->
-<!-- HOOK_cluster_FMT -->
+<!-- PROJNODE_cluster_myproject -->
+<!-- PROJNODE_cluster_FMT -->
 <!-- fmt -->
 <g id="node3" class="node">
 <title>fmt</title>
@@ -148,7 +148,7 @@
 </a>
 </g>
 </g>
-<!-- HOOK_cluster_spdlog -->
+<!-- PROJNODE_cluster_spdlog -->
 <!-- spdlog -->
 <g id="node5" class="node">
 <title>spdlog</title>
@@ -158,16 +158,16 @@
 </a>
 </g>
 </g>
-<!-- spdlog&#45;&gt;HOOK_cluster_FMT -->
+<!-- spdlog&#45;&gt;PROJNODE_cluster_FMT -->
 <g id="edge17" class="edge">
-<title>spdlog&#45;&gt;HOOK_cluster_FMT</title>
+<title>spdlog&#45;&gt;PROJNODE_cluster_FMT</title>
 <g id="a_edge17"><a xlink:title="all targets from&#10;FMT">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M486.18,-358.09C507.38,-354.09 533.28,-349.02 556.41,-344 578.78,-339.15 586.32,-335.43 604.68,-331.79"/>
 <polygon fill="black" stroke="black" points="605.45,-335.2 614.68,-330 604.22,-328.31 605.45,-335.2"/>
 </a>
 </g>
 </g>
-<!-- HOOK_cluster_Catch2 -->
+<!-- PROJNODE_cluster_Catch2 -->
 <!-- Catch2 -->
 <g id="node7" class="node">
 <title>Catch2</title>
@@ -192,7 +192,7 @@
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M538.47,-502C576.75,-502 619.56,-502 652.78,-502"/>
 <polygon fill="black" stroke="black" points="653.21,-505.5 663.21,-502 653.21,-498.5 653.21,-505.5"/>
 </g>
-<!-- HOOK_cluster_CLI11 -->
+<!-- PROJNODE_cluster_CLI11 -->
 <!-- CLI11 -->
 <g id="node10" class="node">
 <title>CLI11</title>
@@ -202,7 +202,7 @@
 </a>
 </g>
 </g>
-<!-- HOOK_cluster_ftxui -->
+<!-- PROJNODE_cluster_ftxui -->
 <!-- component -->
 <g id="node12" class="node">
 <title>component</title>
@@ -248,8 +248,8 @@
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M743.75,-199.93C766.53,-201.29 797.62,-203.15 824.22,-204.74"/>
 <polygon fill="black" stroke="black" points="824.35,-208.26 834.54,-205.36 824.77,-201.27 824.35,-208.26"/>
 </g>
-<!-- HOOK_cluster_tools -->
-<!-- HOOK_cluster_CmakeConfigPackageTests -->
+<!-- PROJNODE_cluster_tools -->
+<!-- PROJNODE_cluster_CmakeConfigPackageTests -->
 <!-- constexpr_tests -->
 <g id="node17" class="node">
 <title>constexpr_tests</title>
@@ -259,16 +259,16 @@
 </a>
 </g>
 </g>
-<!-- constexpr_tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge5" class="edge">
-<title>constexpr_tests&#45;&gt;HOOK_cluster_Catch2</title>
+<title>constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge5"><a xlink:title="all targets from&#10;Catch2">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M243.27,-523.78C266.45,-519.6 290.63,-512.14 309.63,-498 320.81,-489.68 316.32,-478.51 322.45,-468.79"/>
 <polygon fill="black" stroke="black" points="324.96,-471.23 329.63,-461.71 320.05,-466.24 324.96,-471.23"/>
 </a>
 </g>
 </g>
-<!-- constexpr_tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <!-- sample_library -->
 <g id="node20" class="node">
 <title>sample_library</title>
@@ -293,16 +293,16 @@
 </a>
 </g>
 </g>
-<!-- relaxed_constexpr_tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- relaxed_constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge14" class="edge">
-<title>relaxed_constexpr_tests&#45;&gt;HOOK_cluster_Catch2</title>
+<title>relaxed_constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge14"><a xlink:title="all targets from&#10;Catch2">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M267.82,-467.44C284.69,-466.27 302.29,-465.21 319.53,-464.31"/>
 <polygon fill="black" stroke="black" points="319.82,-467.8 329.63,-463.8 319.47,-460.81 319.82,-467.8"/>
 </a>
 </g>
 </g>
-<!-- relaxed_constexpr_tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- relaxed_constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <!-- relaxed_constexpr_tests&#45;&gt;sample_library -->
 <g id="edge16" class="edge">
 <title>relaxed_constexpr_tests&#45;&gt;sample_library</title>
@@ -318,16 +318,16 @@
 </a>
 </g>
 </g>
-<!-- tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge18" class="edge">
-<title>tests&#45;&gt;HOOK_cluster_Catch2</title>
+<title>tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge18"><a xlink:title="all targets from&#10;Catch2">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M198.08,-426.07C247.15,-430.19 337.61,-442.39 393.22,-452.2"/>
 <polygon fill="black" stroke="black" points="392.72,-455.67 403.19,-454 393.97,-448.78 392.72,-455.67"/>
 </a>
 </g>
 </g>
-<!-- tests&#45;&gt;HOOK_cluster_Catch2 -->
+<!-- tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <!-- tests&#45;&gt;sample_library -->
 <g id="edge20" class="edge">
 <title>tests&#45;&gt;sample_library</title>
@@ -343,43 +343,43 @@
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;HOOK_cluster_FMT -->
+<!-- intro&#45;&gt;PROJNODE_cluster_FMT -->
 <g id="edge8" class="edge">
-<title>intro&#45;&gt;HOOK_cluster_FMT</title>
+<title>intro&#45;&gt;PROJNODE_cluster_FMT</title>
 <g id="a_edge8"><a xlink:title="all targets from&#10;FMT">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M180.07,-176.58C207.99,-200.71 267.83,-248.5 327.61,-271 376.76,-289.5 509.3,-304.49 604.44,-313.32"/>
 <polygon fill="black" stroke="black" points="604.4,-316.83 614.68,-314.26 605.04,-309.86 604.4,-316.83"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;HOOK_cluster_spdlog -->
+<!-- intro&#45;&gt;PROJNODE_cluster_spdlog -->
 <g id="edge9" class="edge">
-<title>intro&#45;&gt;HOOK_cluster_spdlog</title>
+<title>intro&#45;&gt;PROJNODE_cluster_spdlog</title>
 <g id="a_edge9"><a xlink:title="all targets from&#10;spdlog">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M175.7,-178.03C200.17,-209.68 259.61,-279.92 327.61,-312 329.43,-312.86 331.29,-313.68 333.18,-314.45"/>
 <polygon fill="black" stroke="black" points="332.21,-317.83 342.81,-318 334.63,-311.26 332.21,-317.83"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;HOOK_cluster_CLI11 -->
+<!-- intro&#45;&gt;PROJNODE_cluster_CLI11 -->
 <g id="edge10" class="edge">
-<title>intro&#45;&gt;HOOK_cluster_CLI11</title>
+<title>intro&#45;&gt;PROJNODE_cluster_CLI11</title>
 <g id="a_edge10"><a xlink:title="all targets from&#10;CLI11">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M194.27,-166.83C227.31,-170.18 279.4,-169.69 309.63,-140 341.06,-109.14 299.74,-72.37 320.82,-41.67"/>
 <polygon fill="black" stroke="black" points="323.6,-43.81 327.61,-34 318.36,-39.17 323.6,-43.81"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;HOOK_cluster_ftxui -->
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
 <g id="edge11" class="edge">
-<title>intro&#45;&gt;HOOK_cluster_ftxui</title>
+<title>intro&#45;&gt;PROJNODE_cluster_ftxui</title>
 <g id="a_edge11"><a xlink:title="all targets from&#10;ftxui">
 <path fill="none" stroke="black" stroke-dasharray="5,2" d="M195.88,-152.98C243.19,-147.68 332.17,-147.08 388.92,-151.18"/>
 <polygon fill="black" stroke="black" points="388.87,-154.69 399.12,-152 389.44,-147.71 388.87,-154.69"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;HOOK_cluster_ftxui -->
-<!-- intro&#45;&gt;HOOK_cluster_ftxui -->
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
 </g>
 </svg>

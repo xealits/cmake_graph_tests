@@ -7,8 +7,9 @@ import logging
 from glob import glob
 from os.path import isfile, isdir, join, getctime
 import pydot
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import re
+from itertools import chain
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,6 +29,24 @@ node_shapes.update(
         "UTILITY": "note",
     }
 )
+
+
+class GenerateLetters:
+    # greek_codes   = chain(range(0x370, 0x3e2), range(0x3f0, 0x400))
+    greek_codes   = chain(range(0x3B1, 0x3CA), range(0x391, 0x3AA))
+    greek_symbols = (chr(c) for c in greek_codes)
+    greek_letters = [c for c in greek_symbols if c.isalpha()]
+
+    def __init__(self):
+        self._index = 0
+
+    def next(self):
+        if self._index > len(self.greek_letters):
+            raise RuntimeError("ran out of letters!")
+
+        letter = self.greek_letters[self._index]
+        self._index += 1
+        return letter
 
 
 def cmake_api_setup_query(build_dir: str):
@@ -64,18 +83,136 @@ def cmake_api_projects_directories_targets(codemodel_cfg: dict):
     )
 
 
+Dependence = namedtuple("Dependence", "source to")
+
+
+class Project:
+    def __init__(self, project_codemodel, codemodel):
+        self._project_codemodel = project_codemodel
+        self._codemodel = codemodel
+        self._graph = None
+        self._project_node = None
+
+    def name(self):
+        return self._project_codemodel["name"]
+
+    def parent_index(self):
+        return self._project_codemodel.get("parentIndex")
+
+    def subproj_indexes(self):
+        return self._project_codemodel["childIndexes"]
+
+    def target_indexes(self):
+        return self._project_codemodel["targetIndexes"]
+
+    def directory_indexes(self):
+        return self._project_codemodel["directoryIndexes"]
+
+    def full_dependence(self, target):
+        deps = target.dependency_indexes()
+        return all(ind in deps for ind in self.target_indexes())
+
+    def get_project_node(self):
+        if self._graph is None:
+            self._graph = self.get_graph()
+        assert self._project_node is not None
+        return self._project_node
+
+    def get_graph(self, layout="dot", bgcolor="white", style="dotted"):
+        if self._graph is not None:
+            return self._graph
+
+        pr_name = self.name()
+        dir_sources = []
+        for i in self.directory_indexes():
+            dir_sources.append(self._codemodel["directories"][i]["source"])
+
+        pr_graph = pydot.Cluster(
+            # f"cluster_{pr_name}",
+            pr_name,
+            label=pr_name,
+            tooltip="\n".join(dir_sources),
+            bgcolor=bgcolor,
+            layout=layout,
+            style=style
+        )
+
+        # add a dummy invisible node per cluster
+        # in the case we need an edge pointing at the whole project
+        # like when all targets of the project are used
+        project_node = pydot.Node(
+            f"PROJNODE_{pr_graph.get_name()}",
+            label = self.name(),
+            shape="point", style="invis"
+        )
+        pr_graph.add_node(project_node)
+        self._project_node = project_node
+
+        self._graph = pr_graph
+        return self._graph
+
+
+class Directory:
+    def __init__(self, directory_codemodel, codemodel, reply_dir):
+        self._directory_codemodel = directory_codemodel
+        self._codemodel = codemodel
+        self._graph = None
+
+        json_fpath = join(reply_dir, directory_codemodel["jsonFile"])
+        assert isfile(json_fpath)
+        with open(json_fpath, "r") as f:
+            self._json = json.load(f)
+
+    def source(self):
+        return self._directory_codemodel["source"]
+
+    def subdir_indexes(self):
+        return self._directory_codemodel["childIndexes"]
+
+    def target_indexes(self):
+        return self._directory_codemodel["targetIndexes"]
+
+    def project_index(self):
+        return self._directory_codemodel["projectIndex"]
+
+    def full_dependence(self, target):
+        deps = target.dependency_indexes()
+        return all(ind in deps for ind in self.target_indexes())
+
+    def get_graph(self, layout="dot"):
+        if self._graph is not None:
+            return self._graph
+
+        dir_source = self.source()
+        dir_graph = pydot.Cluster(
+            dir_source,
+            label=f"📁 {dir_source}",
+            labeljust="l",
+            bgcolor="yellow",
+            layout=layout,
+            style="dotted",
+            penwidth=0,
+        )
+
+        self._graph = dir_graph
+        return self._graph
+
+
 class Target:
-    def __init__(
-        self, json_fpath, target_codemodel, codemodel, project=None, directory=None
-    ):
+    def __init__(self, target_codemodel, codemodel, reply_dir):
+        json_fpath = join(reply_dir, target_codemodel["jsonFile"])
         assert isfile(json_fpath)
         with open(json_fpath, "r") as f:
             self._json = json.load(f)
 
         self._target_codemodel = target_codemodel
         self._codemodel = codemodel
-        self.project = project
-        self.directory = directory
+        self.project = codemodel["projects"][self.project_index()]
+        self.directory = codemodel["directories"][self.directory_index()]
+        self._label = self.target_name()
+
+    def set_label(self, label):
+        self._label = label
 
     def type(self):
         return self._json["type"]
@@ -117,6 +254,9 @@ class Target:
 
     def project_index(self):
         return self._target_codemodel["projectIndex"]
+
+    def directory_index(self):
+        return self._target_codemodel["directoryIndex"]
 
     def target_install_paths(self):
         install = self._json.get("install")
@@ -181,7 +321,7 @@ class Target:
             extra_info.append("\n".join(["defines:"] + cmp["defines"]))
             extra_info.append("\n".join(["sources:"] + cmp["sources"]))
 
-        target_node = pydot.Node(t_name, tooltip="\n".join(extra_info))
+        target_node = pydot.Node(t_name, label=self._label, tooltip="\n".join(extra_info))
         target_node.set_shape(node_shapes[t_type])
 
         return target_node
@@ -196,11 +336,9 @@ def cmake_build_config_graph(
     perproject=True,
 ):
     cfg_name = codemodel["name"]
-    projects = codemodel["projects"]
-    directories = codemodel["directories"]
-    targets = codemodel["targets"]
-
-    targets_dict = {}  # {t_model["id"]: t_model for t_model in targets}
+    # projects = codemodel["projects"]
+    # directories = codemodel["directories"]
+    # targets = codemodel["targets"]
 
     graph = pydot.Dot(
         f"targetgraph-{cfg_name}",
@@ -211,64 +349,29 @@ def cmake_build_config_graph(
         rankdir="LR"
     )
 
-    project_graphs = []
-    for pr in projects:
-        pr_name = pr["name"]
-        dir_sources = [directories[i]["source"] for i in pr["directoryIndexes"]]
-        pr_graph = pydot.Cluster(
-            # f"cluster_{pr_name}",
-            pr_name,
-            label=pr_name,
-            tooltip="\n".join(dir_sources),
-            bgcolor="white",
-            layout=layout,
-            style="dotted",
-        )
+    projects = []
+    for pr in codemodel["projects"]:
+        projects.append(Project(pr, codemodel))
 
-        # add a dummy invisible node per cluster
-        # in the case we need an edge pointing at the whole project
-        # like when all targets of the project are used
-        project_node = pydot.Node(
-            f"HOOK_{pr_graph.get_name()}", shape="point", style="invis"
-        )
-        pr_graph.add_node(project_node)
-
-        pr_parent_index = pr.get("parentIndex")
-        project_graphs.append((pr_parent_index, pr_graph))
-
-    for parent_index, pr_graph in project_graphs:
+    for proj in projects:
+        parent_index = proj.parent_index()
         if parent_index is None:
-            graph.add_subgraph(pr_graph)
+            graph.add_subgraph(proj.get_graph())
         else:
-            project_graphs[parent_index][1].add_subgraph(pr_graph)
+            projects[parent_index].get_graph().add_subgraph(proj.get_graph())
 
-    directory_graphs = []
-    for dir_info in directories:
-        dir_source = dir_info["source"]
-        dir_graph = pydot.Cluster(
-            dir_source,
-            label=f"📁 {dir_source}",
-            labeljust="l",
-            bgcolor="yellow",
-            layout=layout,
-            style="dotted",
-            penwidth=0,
-        )
+    directories = []
+    for dir_model in codemodel["directories"]:
+        directory = Directory(dir_model, codemodel, reply_dir)
+        directories.append(directory)
+        projects[directory.project_index()].get_graph().add_subgraph(directory.get_graph())
 
-        project_graphs[dir_info["projectIndex"]][1].add_subgraph(dir_graph)
-        directory_graphs.append(dir_graph)
-
-    for t_model in targets:
-        dir_index = t_model["directoryIndex"]
-        project = projects[t_model["projectIndex"]]
-
-        t_json = t_model["jsonFile"]
+    targets_dict = {}  # {t_model["id"]: t_model for t_model in targets}
+    for t_model in codemodel["targets"]:
         target = Target(
-            join(reply_dir, t_json),
             target_codemodel=t_model,
             codemodel=codemodel,
-            project=project,
-            directory=directories[dir_index],
+            reply_dir=reply_dir,
         )
         targets_dict[target.target_id()] = target
 
@@ -281,30 +384,24 @@ def cmake_build_config_graph(
         if skip_names and re.match(skip_names, t_name):
             continue
 
-        dir_graph = directory_graphs[dir_index]
-        dir_graph.add_node(target.make_graph())
+        directory = directories[target.directory_index()]
+        directory.get_graph().add_node(target.make_graph())
 
     for target in targets_dict.values():
-        project_index = target.project_index()
-        project_graph = project_graphs[project_index][1]
+        project = projects[target.project_index()]
         target_dep_ids = target.dependency_ids()
-        target_dep_indexes = target.dependency_indexes()
 
         full_project_dependencies = set()
         for dep_id in target_dep_ids:
             # if dependencies include all targets of a project
             # then depend on the whole project
             # - add lhead=cluester name
-            dep_proj_ind = targets_dict[dep_id].project_index()
-            dep_proj_id = project_graphs[dep_proj_ind][1].get_name()
-
-            dep_proj_target_inds = projects[dep_proj_ind]["targetIndexes"]
-            logging.debug(
-                f"check full deps: {target.target_name()} & {target_dep_indexes} VS {dep_proj_id} & {dep_proj_target_inds}"
-            )
-            full_dep = all(i in target_dep_indexes for i in dep_proj_target_inds)
-
             dep_target = targets_dict[dep_id]
+            dep_proj = projects[dep_target.project_index()]
+            dep_proj_id = dep_proj.get_graph().get_name()
+
+            full_dep = dep_proj.full_dependence(target)
+
             dep_name = dep_target.target_name()
             edge_style = (
                 "invis" if dep_proj_id in full_project_dependencies else "dashed"
@@ -314,9 +411,9 @@ def cmake_build_config_graph(
             )
 
             edge_tooltip = ""
-            if perproject and full_dep and project_index != dep_target.project_index():
-                dep_name = f"HOOK_{project_graphs[dep_proj_ind][1].get_name()}"
-                dep_proj_name = project_graphs[dep_proj_ind][1].get_label()
+            if perproject and full_dep and target.project_index() != dep_target.project_index():
+                dep_name = dep_proj.get_project_node().get_name()
+                dep_proj_name = dep_proj.get_project_node().get_label()
                 edge_tooltip = f"all targets from\n{dep_proj_name}"
 
             dep_edge = pydot.Edge(
@@ -324,20 +421,19 @@ def cmake_build_config_graph(
             )
 
             if perproject and full_dep:
-                # dep_proj_name = projects[dep_proj_id]["name"]
                 dep_edge.set_lhead(dep_proj_id)
                 full_project_dependencies.add(dep_proj_id)
                 logging.debug(
                     f"full deps now: {target.target_name()} {full_project_dependencies}"
                 )
 
-            if project_index == dep_target.project_index():
-                project_graph.add_edge(dep_edge)
+            if target.project_index() == dep_target.project_index():
+                project.get_graph().add_edge(dep_edge)
             else:
                 graph.add_edge(dep_edge)
 
             logging.debug(
-                f"Added node dep: {target.target_name()} {dep_name} : {target_dep_indexes} - {dep_proj_target_inds}"
+                f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"
             )
 
     return graph
