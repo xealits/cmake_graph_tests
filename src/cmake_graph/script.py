@@ -515,10 +515,12 @@ def cmake_build_config_graph(
         # check if it's a full-project dep
         edge_style = "dashed"
         edge_tooltip = ""
+        dep_node_name = to.get_graph().get_name()
         if full_dep:
             dep_proj_name = projects[to.project_index()].name()
             edge_tooltip = f"all targets from\n{dep_proj_name}"
             dep_proj_ind = to.project_index()
+            dep_node_name = projects[dep_proj_ind].get_project_node()
 
             if (target, dep_proj_ind) in full_project_dependencies:
                 edge_style = "invis"
@@ -527,7 +529,7 @@ def cmake_build_config_graph(
 
         dep_edge = pydot.Edge(
             target.target_name(),
-            to.get_graph().get_name(),
+            dep_node_name,
             style=edge_style,
             tooltip=edge_tooltip,
         )
@@ -638,7 +640,7 @@ def cmake_graph_cli():
         skip_names=args.skip_names,
         layout=args.layout,
         perproject=not args.no_perproject,
-        frequent_deps_threshold=args.frequent_deps_threshold
+        frequent_deps_threshold=args.frequent_deps_threshold,
     )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")

@@ -132,8 +132,8 @@
 <g id="clust26" class="cluster">
 <title>cluster_src/ftxui_sample</title>
 <g id="a_clust26"><a xlink:title=".&#10;configured_files&#10;src&#10;src/sample_library&#10;src/ftxui_sample">
-<polygon fill="yellow" stroke="black" stroke-width="0" stroke-dasharray="1,5" points="96.02,-221 96.02,-296 253.62,-296 253.62,-221 96.02,-221"/>
-<text text-anchor="middle" x="175.02" y="-280.8" font-family="Times,serif" font-size="14.00">📁 src/ftxui_sample</text>
+<polygon fill="yellow" stroke="black" stroke-width="0" stroke-dasharray="1,5" points="96.02,-136 96.02,-211 253.62,-211 253.62,-136 96.02,-136"/>
+<text text-anchor="middle" x="175.02" y="-195.8" font-family="Times,serif" font-size="14.00">📁 src/ftxui_sample</text>
 </a>
 </g>
 </g>
@@ -158,12 +158,12 @@
 </a>
 </g>
 </g>
-<!-- spdlog&#45;&gt;fmt -->
+<!-- spdlog&#45;&gt;PROJNODE_cluster_FMT -->
 <g id="edge15" class="edge">
-<title>spdlog&#45;&gt;fmt</title>
+<title>spdlog&#45;&gt;PROJNODE_cluster_FMT</title>
 <g id="a_edge15"><a xlink:title="all targets from&#10;FMT">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M510.29,-365C561.68,-363.84 645.58,-361.95 694.19,-360.86"/>
-<polygon fill="black" stroke="black" points="694.38,-364.36 704.29,-360.63 694.22,-357.36 694.38,-364.36"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M509.19,-358.1C530.4,-354.1 556.3,-349.03 579.42,-344 605.35,-338.36 611.26,-334.24 637.46,-330 667.53,-325.13 703.48,-323.13 721.25,-322.39"/>
+<polygon fill="black" stroke="black" points="721.49,-325.88 731.36,-322.02 721.24,-318.88 721.49,-325.88"/>
 </a>
 </g>
 </g>
@@ -207,8 +207,8 @@
 <g id="node12" class="node">
 <title>component</title>
 <g id="a_node12"><a xlink:title="type=STATIC_LIBRARY&#10;add_library @ build/_deps/ftxui&#45;src/CMakeLists.txt:107&#10;len(depends)=2&#10;deps:&#10;ftxui: dom&#10;ftxui: screen&#10;installs:&#10;/usr/local/lib&#10;compile_groups:&#10;includes:&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/src&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/include&#10;defines:&#10;sources:&#10;build/_deps/ftxui&#45;src/src/ftxui/component/animation.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/button.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/catch_event.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/checkbox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/collapsible.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/component.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/component_options.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/container.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/dropdown.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/event.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/hoverable.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/input.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/loop.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/maybe.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/menu.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/modal.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/radiobox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/renderer.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/resizable_split.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/screen_interactive.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/slider.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/terminal_input_parser.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/util.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/component/window.cpp">
-<polygon fill="none" stroke="black" points="531.69,-192.54 531.69,-207.46 492.63,-218 437.41,-218 398.36,-207.46 398.36,-192.54 437.41,-182 492.63,-182 531.69,-192.54"/>
-<text text-anchor="middle" x="465.02" y="-196.3" font-family="Times,serif" font-size="14.00">component</text>
+<polygon fill="none" stroke="black" points="531.69,-201.54 531.69,-216.46 492.63,-227 437.41,-227 398.36,-216.46 398.36,-201.54 437.41,-191 492.63,-191 531.69,-201.54"/>
+<text text-anchor="middle" x="465.02" y="-205.3" font-family="Times,serif" font-size="14.00">component</text>
 </a>
 </g>
 </g>
@@ -216,37 +216,37 @@
 <g id="node13" class="node">
 <title>dom</title>
 <g id="a_node13"><a xlink:title="type=STATIC_LIBRARY&#10;add_library @ build/_deps/ftxui&#45;src/CMakeLists.txt:52&#10;len(depends)=1&#10;deps:&#10;ftxui: screen&#10;installs:&#10;/usr/local/lib&#10;compile_groups:&#10;includes:&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/src&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/include&#10;defines:&#10;sources:&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/automerge.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/selection_style.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/blink.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/bold.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/border.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/box_helper.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/canvas.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/clear_under.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/color.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/composite_decorator.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/dbox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/dim.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/flex.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/flexbox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/flexbox_config.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/flexbox_helper.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/focus.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/frame.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/gauge.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/graph.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/gridbox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/hbox.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/hyperlink.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/inverted.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/italic.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/linear_gradient.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/node.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/node_decorator.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/paragraph.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/reflect.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/scroll_indicator.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/selection.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/separator.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/size.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/spinner.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/strikethrough.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/table.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/text.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/underlined.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/underlined_double.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/util.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/dom/vbox.cpp">
-<polygon fill="none" stroke="black" points="766.43,-210.54 766.43,-225.46 747.02,-236 719.58,-236 700.17,-225.46 700.17,-210.54 719.58,-200 747.02,-200 766.43,-210.54"/>
-<text text-anchor="middle" x="733.3" y="-214.3" font-family="Times,serif" font-size="14.00">dom</text>
+<polygon fill="none" stroke="black" points="766.43,-190.54 766.43,-205.46 747.02,-216 719.58,-216 700.17,-205.46 700.17,-190.54 719.58,-180 747.02,-180 766.43,-190.54"/>
+<text text-anchor="middle" x="733.3" y="-194.3" font-family="Times,serif" font-size="14.00">dom</text>
 </a>
 </g>
 </g>
 <!-- component&#45;&gt;dom -->
 <g id="edge3" class="edge">
 <title>component&#45;&gt;dom</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M531.84,-204.45C581.21,-207.79 647.34,-212.26 689.89,-215.13"/>
-<polygon fill="black" stroke="black" points="689.7,-218.63 699.91,-215.81 690.17,-211.64 689.7,-218.63"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M531.84,-206.28C581.21,-204.24 647.34,-201.51 689.89,-199.75"/>
+<polygon fill="black" stroke="black" points="690.07,-203.25 699.91,-199.34 689.78,-196.25 690.07,-203.25"/>
 </g>
 <!-- screen -->
 <g id="node14" class="node">
 <title>screen</title>
 <g id="a_node14"><a xlink:title="type=STATIC_LIBRARY&#10;add_library @ build/_deps/ftxui&#45;src/CMakeLists.txt:34&#10;len(depends)=0&#10;deps:&#10;installs:&#10;/usr/local/lib&#10;compile_groups:&#10;includes:&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/src&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/include&#10;defines:&#10;sources:&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/box.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/color.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/color_info.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/image.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/screen.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/string.cpp&#10;build/_deps/ftxui&#45;src/src/ftxui/screen/terminal.cpp">
-<polygon fill="none" stroke="black" points="947.27,-210.54 947.27,-225.46 920.89,-236 883.57,-236 857.18,-225.46 857.18,-210.54 883.57,-200 920.89,-200 947.27,-210.54"/>
-<text text-anchor="middle" x="902.23" y="-214.3" font-family="Times,serif" font-size="14.00">screen</text>
+<polygon fill="none" stroke="black" points="947.27,-200.54 947.27,-215.46 920.89,-226 883.57,-226 857.18,-215.46 857.18,-200.54 883.57,-190 920.89,-190 947.27,-200.54"/>
+<text text-anchor="middle" x="902.23" y="-204.3" font-family="Times,serif" font-size="14.00">screen</text>
 </a>
 </g>
 </g>
 <!-- component&#45;&gt;screen -->
 <g id="edge2" class="edge">
 <title>component&#45;&gt;screen</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M526.22,-191.02C598.93,-181.89 724.61,-171.61 830.2,-191 841.23,-193.03 852.76,-196.68 863.25,-200.66"/>
-<polygon fill="black" stroke="black" points="861.96,-203.92 872.54,-204.37 864.55,-197.41 861.96,-203.92"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M527.46,-217.71C600.03,-226.61 724.3,-237.5 830.2,-225 838.26,-224.05 846.73,-222.51 854.89,-220.74"/>
+<polygon fill="black" stroke="black" points="855.7,-224.15 864.66,-218.49 854.13,-217.32 855.7,-224.15"/>
 </g>
 <!-- dom&#45;&gt;screen -->
 <g id="edge4" class="edge">
 <title>dom&#45;&gt;screen</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M766.49,-218C789.24,-218 820.28,-218 846.84,-218"/>
-<polygon fill="black" stroke="black" points="847.15,-221.5 857.15,-218 847.15,-214.5 847.15,-221.5"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M766.49,-199.93C789.24,-201.29 820.28,-203.15 846.84,-204.74"/>
+<polygon fill="black" stroke="black" points="846.96,-208.26 857.15,-205.36 847.38,-201.27 846.96,-208.26"/>
 </g>
 <!-- PROJNODE_cluster_tools -->
 <!-- PROJNODE_cluster_CmakeConfigPackageTests -->
@@ -260,12 +260,12 @@
 </a>
 </g>
 </g>
-<!-- constexpr_tests&#45;&gt;Catch2WithMain -->
+<!-- constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge5" class="edge">
-<title>constexpr_tests&#45;&gt;Catch2WithMain</title>
+<title>constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge5"><a xlink:title="all targets from&#10;Catch2">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M271.45,-517.34C299.48,-515.11 330.24,-512.66 358.8,-510.38"/>
-<polygon fill="black" stroke="black" points="359.11,-513.87 368.8,-509.59 358.55,-506.89 359.11,-513.87"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M266.89,-512.64C289.25,-507.33 312.51,-499.77 332.64,-489 342.34,-483.81 340.55,-476.42 350.62,-472 385.4,-456.72 431.97,-459.89 452.95,-462.41"/>
+<polygon fill="black" stroke="black" points="452.67,-465.9 463.06,-463.83 453.64,-458.97 452.67,-465.9"/>
 </a>
 </g>
 </g>
@@ -294,12 +294,12 @@
 </a>
 </g>
 </g>
-<!-- relaxed_constexpr_tests&#45;&gt;Catch2WithMain -->
+<!-- relaxed_constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge13" class="edge">
-<title>relaxed_constexpr_tests&#45;&gt;Catch2WithMain</title>
+<title>relaxed_constexpr_tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge13"><a xlink:title="all targets from&#10;Catch2">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M271.45,-469.32C307.58,-475.45 348.26,-482.35 382.9,-488.23"/>
-<polygon fill="black" stroke="black" points="382.52,-491.72 392.96,-489.94 383.69,-484.82 382.52,-491.72"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M306.16,-457.99C365.46,-460.24 427.83,-462.62 452.77,-463.57"/>
+<polygon fill="black" stroke="black" points="452.96,-467.08 463.09,-463.96 453.23,-460.09 452.96,-467.08"/>
 </a>
 </g>
 </g>
@@ -319,12 +319,12 @@
 </a>
 </g>
 </g>
-<!-- tests&#45;&gt;Catch2WithMain -->
+<!-- tests&#45;&gt;PROJNODE_cluster_Catch2 -->
 <g id="edge16" class="edge">
-<title>tests&#45;&gt;Catch2WithMain</title>
+<title>tests&#45;&gt;PROJNODE_cluster_Catch2</title>
 <g id="a_edge16"><a xlink:title="all targets from&#10;Catch2">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M213.39,-379.41C248.78,-380.05 300.72,-386.73 332.64,-417 353.77,-437.04 329.16,-460.32 350.62,-480 354.5,-483.55 358.76,-486.61 363.31,-489.23"/>
-<polygon fill="black" stroke="black" points="361.84,-492.41 372.34,-493.76 364.97,-486.15 361.84,-492.41"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M210,-387.7C242.08,-394.19 290.96,-404.82 332.64,-417 378.64,-430.44 431.99,-451.17 453.87,-459.9"/>
+<polygon fill="black" stroke="black" points="452.62,-463.17 463.2,-463.66 455.23,-456.68 452.62,-463.17"/>
 </a>
 </g>
 </g>
@@ -338,48 +338,48 @@
 <g id="node21" class="node">
 <title>intro</title>
 <g id="a_node21"><a xlink:title="type=EXECUTABLE&#10;add_executable @ src/ftxui_sample/CMakeLists.txt:1&#10;len(depends)=6&#10;deps:&#10;CLI11: CLI11&#10;FMT: fmt&#10;ftxui: component&#10;ftxui: dom&#10;ftxui: screen&#10;spdlog: spdlog&#10;installs:&#10;/usr/local/bin&#10;compile_groups:&#10;includes:&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/configured_files/include&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/cli11&#45;src/include&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/fmt&#45;src/include&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/spdlog&#45;src/include&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/tools&#45;src/include&#10;/workspaces/cmake_graph_tests/tryouts/cmake_template/build/_deps/ftxui&#45;src/include&#10;defines:&#10;SPDLOG_COMPILED_LIB&#10;SPDLOG_FMT_EXTERNAL&#10;sources:&#10;src/ftxui_sample/main.cpp">
-<polygon fill="none" stroke="black" points="177.57,-229.05 179.72,-229.15 181.85,-229.3 183.95,-229.49 186,-229.74 188.01,-230.03 189.97,-230.36 191.86,-230.75 193.68,-231.18 195.42,-231.65 197.08,-232.16 198.66,-232.71 200.13,-233.31 201.51,-233.94 202.78,-234.61 203.95,-235.31 205.01,-236.04 205.96,-236.8 206.79,-237.59 207.51,-238.41 208.11,-239.25 208.6,-240.11 208.97,-240.99 209.23,-241.89 209.38,-242.8 209.42,-243.72 209.36,-244.65 209.19,-245.59 208.92,-246.53 208.55,-247.47 208.09,-248.41 207.54,-249.35 206.91,-250.28 206.21,-251.2 205.42,-252.11 204.57,-253.01 203.65,-253.89 202.67,-254.75 201.64,-255.59 200.55,-256.41 199.42,-257.2 198.25,-257.96 197.04,-258.69 195.8,-259.39 194.52,-260.06 193.22,-260.69 191.9,-261.29 190.55,-261.84 189.19,-262.35 187.81,-262.82 186.42,-263.25 185.02,-263.64 183.61,-263.97 182.19,-264.26 180.77,-264.51 179.34,-264.7 177.91,-264.85 176.48,-264.95 175.04,-265 173.6,-265 172.17,-264.95 170.73,-264.85 169.3,-264.7 167.87,-264.51 166.45,-264.26 165.03,-263.97 163.62,-263.64 162.22,-263.25 160.83,-262.82 159.45,-262.35 158.09,-261.84 156.75,-261.29 155.42,-260.69 154.12,-260.06 152.85,-259.39 151.6,-258.69 150.39,-257.96 149.22,-257.2 148.09,-256.41 147,-255.59 145.97,-254.75 144.99,-253.89 144.07,-253.01 143.22,-252.11 142.44,-251.2 141.73,-250.28 141.1,-249.35 140.55,-248.41 140.09,-247.47 139.73,-246.53 139.46,-245.59 139.29,-244.65 139.22,-243.72 139.26,-242.8 139.41,-241.89 139.67,-240.99 140.05,-240.11 140.53,-239.25 141.14,-238.41 141.85,-237.59 142.69,-236.8 143.63,-236.04 144.69,-235.31 145.86,-234.61 147.13,-233.94 148.51,-233.31 149.99,-232.71 151.56,-232.16 153.22,-231.65 154.96,-231.18 156.78,-230.75 158.67,-230.36 160.63,-230.03 162.64,-229.74 164.7,-229.49 166.79,-229.3 168.92,-229.15 171.07,-229.05 173.24,-229 175.41,-229 177.57,-229.05"/>
-<text text-anchor="middle" x="174.32" y="-243.3" font-family="Times,serif" font-size="14.00">intro</text>
+<polygon fill="none" stroke="black" points="177.57,-144.05 179.72,-144.15 181.85,-144.3 183.95,-144.49 186,-144.74 188.01,-145.03 189.97,-145.36 191.86,-145.75 193.68,-146.18 195.42,-146.65 197.08,-147.16 198.66,-147.71 200.13,-148.31 201.51,-148.94 202.78,-149.61 203.95,-150.31 205.01,-151.04 205.96,-151.8 206.79,-152.59 207.51,-153.41 208.11,-154.25 208.6,-155.11 208.97,-155.99 209.23,-156.89 209.38,-157.8 209.42,-158.72 209.36,-159.65 209.19,-160.59 208.92,-161.53 208.55,-162.47 208.09,-163.41 207.54,-164.35 206.91,-165.28 206.21,-166.2 205.42,-167.11 204.57,-168.01 203.65,-168.89 202.67,-169.75 201.64,-170.59 200.55,-171.41 199.42,-172.2 198.25,-172.96 197.04,-173.69 195.8,-174.39 194.52,-175.06 193.22,-175.69 191.9,-176.29 190.55,-176.84 189.19,-177.35 187.81,-177.82 186.42,-178.25 185.02,-178.64 183.61,-178.97 182.19,-179.26 180.77,-179.51 179.34,-179.7 177.91,-179.85 176.48,-179.95 175.04,-180 173.6,-180 172.17,-179.95 170.73,-179.85 169.3,-179.7 167.87,-179.51 166.45,-179.26 165.03,-178.97 163.62,-178.64 162.22,-178.25 160.83,-177.82 159.45,-177.35 158.09,-176.84 156.75,-176.29 155.42,-175.69 154.12,-175.06 152.85,-174.39 151.6,-173.69 150.39,-172.96 149.22,-172.2 148.09,-171.41 147,-170.59 145.97,-169.75 144.99,-168.89 144.07,-168.01 143.22,-167.11 142.44,-166.2 141.73,-165.28 141.1,-164.35 140.55,-163.41 140.09,-162.47 139.73,-161.53 139.46,-160.59 139.29,-159.65 139.22,-158.72 139.26,-157.8 139.41,-156.89 139.67,-155.99 140.05,-155.11 140.53,-154.25 141.14,-153.41 141.85,-152.59 142.69,-151.8 143.63,-151.04 144.69,-150.31 145.86,-149.61 147.13,-148.94 148.51,-148.31 149.99,-147.71 151.56,-147.16 153.22,-146.65 154.96,-146.18 156.78,-145.75 158.67,-145.36 160.63,-145.03 162.64,-144.74 164.7,-144.49 166.79,-144.3 168.92,-144.15 171.07,-144.05 173.24,-144 175.41,-144 177.57,-144.05"/>
+<text text-anchor="middle" x="174.32" y="-158.3" font-family="Times,serif" font-size="14.00">intro</text>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;fmt -->
+<!-- intro&#45;&gt;PROJNODE_cluster_FMT -->
 <g id="edge7" class="edge">
-<title>intro&#45;&gt;fmt</title>
+<title>intro&#45;&gt;PROJNODE_cluster_FMT</title>
 <g id="a_edge7"><a xlink:title="all targets from&#10;FMT">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M206.29,-251.2C288.12,-262.46 508.65,-293.79 579.42,-314 606.26,-321.67 610.88,-329.48 637.46,-338 656.03,-343.95 677.12,-349 694.69,-352.76"/>
-<polygon fill="black" stroke="black" points="694.08,-356.21 704.59,-354.82 695.51,-349.36 694.08,-356.21"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M192.43,-176.17C222.39,-200.13 287.21,-248.24 350.62,-271 421.94,-296.59 666.23,-316.85 721.24,-321.15"/>
+<polygon fill="black" stroke="black" points="721.2,-324.66 731.44,-321.94 721.73,-317.68 721.2,-324.66"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;spdlog -->
+<!-- intro&#45;&gt;PROJNODE_cluster_spdlog -->
 <g id="edge8" class="edge">
-<title>intro&#45;&gt;spdlog</title>
+<title>intro&#45;&gt;PROJNODE_cluster_spdlog</title>
 <g id="a_edge8"><a xlink:title="all targets from&#10;spdlog">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M202.61,-255.08C235.89,-265.9 292.64,-287.58 332.64,-320 343,-328.39 339.33,-336.92 350.62,-344 368.13,-354.97 389.92,-360.68 409.7,-363.57"/>
-<polygon fill="black" stroke="black" points="409.47,-367.07 419.83,-364.85 410.35,-360.13 409.47,-367.07"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M188.31,-178.02C214.98,-209.65 279.43,-279.87 350.62,-312 385.5,-327.74 432.02,-328.86 452.97,-328.44"/>
+<polygon fill="black" stroke="black" points="453.2,-331.94 463.06,-328.06 452.93,-324.94 453.2,-331.94"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;CLI11 -->
+<!-- intro&#45;&gt;PROJNODE_cluster_CLI11 -->
 <g id="edge9" class="edge">
-<title>intro&#45;&gt;CLI11</title>
+<title>intro&#45;&gt;PROJNODE_cluster_CLI11</title>
 <g id="a_edge9"><a xlink:title="all targets from&#10;CLI11">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M205.56,-252C240.69,-255.95 298.23,-256.43 332.64,-225 358.59,-201.3 331.32,-177.37 350.62,-148 370.39,-117.91 404.83,-94.69 430.59,-80.36"/>
-<polygon fill="black" stroke="black" points="432.49,-83.31 439.64,-75.49 429.17,-77.15 432.49,-83.31"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M205.27,-167.28C240.67,-171.65 299.01,-172.67 332.64,-140 366.92,-106.71 315.23,-66.1 350.62,-34 379.41,-7.9 430.98,-17.21 453.28,-22.91"/>
+<polygon fill="black" stroke="black" points="452.58,-26.35 463.16,-25.72 454.5,-19.62 452.58,-26.35"/>
 </a>
 </g>
 </g>
-<!-- intro&#45;&gt;component -->
-<!-- intro&#45;&gt;dom -->
-<!-- intro&#45;&gt;screen -->
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
 <g id="edge10" class="edge">
-<title>intro&#45;&gt;screen</title>
+<title>intro&#45;&gt;PROJNODE_cluster_ftxui</title>
 <g id="a_edge10"><a xlink:title="all targets from&#10;ftxui">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M208.24,-248.46C323.59,-253.32 709.05,-267.44 830.2,-245 841.23,-242.96 852.76,-239.3 863.25,-235.32"/>
-<polygon fill="black" stroke="black" points="864.55,-238.56 872.54,-231.61 861.95,-232.06 864.55,-238.56"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M207.32,-153.13C272.03,-145.93 415.58,-147.12 454.26,-156.7"/>
+<polygon fill="black" stroke="black" points="452.93,-159.94 463.5,-160.7 455.71,-153.51 452.93,-159.94"/>
 </a>
 </g>
 </g>
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
+<!-- intro&#45;&gt;PROJNODE_cluster_ftxui -->
 </g>
 </svg>

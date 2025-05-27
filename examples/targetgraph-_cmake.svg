@@ -188,16 +188,16 @@
 <g id="clust24" class="cluster">
 <title>cluster_CMAKE_FORM</title>
 <g id="a_clust24"><a xlink:title="Source/CursesDialog/form">
-<polygon fill="white" stroke="black" stroke-dasharray="1,5" points="512.9,-2291 512.9,-2419 756.43,-2419 756.43,-2291 512.9,-2291"/>
-<text text-anchor="middle" x="634.66" y="-2403.8" font-family="Times,serif" font-size="14.00">CMAKE_FORM</text>
+<polygon fill="white" stroke="black" stroke-dasharray="1,5" points="512.9,-2329 512.9,-2457 756.43,-2457 756.43,-2329 512.9,-2329"/>
+<text text-anchor="middle" x="634.66" y="-2441.8" font-family="Times,serif" font-size="14.00">CMAKE_FORM</text>
 </a>
 </g>
 </g>
 <g id="clust25" class="cluster">
 <title>cluster_Source/CursesDialog/form</title>
 <g id="a_clust25"><a xlink:title="Source/CursesDialog/form">
-<polygon fill="yellow" stroke="black" stroke-width="0" stroke-dasharray="1,5" points="520.9,-2313 520.9,-2388 748.43,-2388 748.43,-2313 520.9,-2313"/>
-<text text-anchor="middle" x="634.9" y="-2372.8" font-family="Times,serif" font-size="14.00">📁 Source/CursesDialog/form</text>
+<polygon fill="yellow" stroke="black" stroke-width="0" stroke-dasharray="1,5" points="520.9,-2351 520.9,-2426 748.43,-2426 748.43,-2351 520.9,-2351"/>
+<text text-anchor="middle" x="634.9" y="-2410.8" font-family="Times,serif" font-size="14.00">📁 Source/CursesDialog/form</text>
 </a>
 </g>
 </g>
@@ -510,8 +510,8 @@
 <g id="node29" class="node">
 <title>cmForm</title>
 <g id="a_node29"><a xlink:title="type=STATIC_LIBRARY&#10;add_library @ Source/CursesDialog/form/CMakeLists.txt:16&#10;len(depends)=0&#10;deps:&#10;compile_groups:&#10;includes:&#10;/workspaces/cmake_graph_tests/temp/cmake/build/Utilities&#10;/workspaces/cmake_graph_tests/temp/cmake/build/Source/CursesDialog/form&#10;/workspaces/cmake_graph_tests/temp/cmake/Source/CursesDialog/form&#10;/workspaces/cmake_graph_tests/temp/cmake/Utilities/std&#10;/workspaces/cmake_graph_tests/temp/cmake/Utilities&#10;defines:&#10;sources:&#10;Source/CursesDialog/form/fld_arg.c&#10;Source/CursesDialog/form/fld_attr.c&#10;Source/CursesDialog/form/fld_current.c&#10;Source/CursesDialog/form/fld_def.c&#10;Source/CursesDialog/form/fld_dup.c&#10;Source/CursesDialog/form/fld_ftchoice.c&#10;Source/CursesDialog/form/fld_ftlink.c&#10;Source/CursesDialog/form/fld_info.c&#10;Source/CursesDialog/form/fld_just.c&#10;Source/CursesDialog/form/fld_link.c&#10;Source/CursesDialog/form/fld_max.c&#10;Source/CursesDialog/form/fld_move.c&#10;Source/CursesDialog/form/fld_newftyp.c&#10;Source/CursesDialog/form/fld_opts.c&#10;Source/CursesDialog/form/fld_pad.c&#10;Source/CursesDialog/form/fld_page.c&#10;Source/CursesDialog/form/fld_stat.c&#10;Source/CursesDialog/form/fld_type.c&#10;Source/CursesDialog/form/fld_user.c&#10;Source/CursesDialog/form/frm_cursor.c&#10;Source/CursesDialog/form/frm_data.c&#10;Source/CursesDialog/form/frm_def.c&#10;Source/CursesDialog/form/frm_driver.c&#10;Source/CursesDialog/form/frm_hook.c&#10;Source/CursesDialog/form/frm_opts.c&#10;Source/CursesDialog/form/frm_page.c&#10;Source/CursesDialog/form/frm_post.c&#10;Source/CursesDialog/form/frm_req_name.c&#10;Source/CursesDialog/form/frm_scale.c&#10;Source/CursesDialog/form/frm_sub.c&#10;Source/CursesDialog/form/frm_user.c&#10;Source/CursesDialog/form/frm_win.c&#10;Source/CursesDialog/form/fty_alnum.c&#10;Source/CursesDialog/form/fty_alpha.c&#10;Source/CursesDialog/form/fty_enum.c&#10;Source/CursesDialog/form/fty_int.c&#10;Source/CursesDialog/form/fty_ipv4.c&#10;Source/CursesDialog/form/fty_num.c&#10;Source/CursesDialog/form/fty_regex.c">
-<polygon fill="none" stroke="black" points="687.19,-2331.54 687.19,-2346.46 656.42,-2357 612.91,-2357 582.14,-2346.46 582.14,-2331.54 612.91,-2321 656.42,-2321 687.19,-2331.54"/>
-<text text-anchor="middle" x="634.66" y="-2335.3" font-family="Times,serif" font-size="14.00">cmForm</text>
+<polygon fill="none" stroke="black" points="687.19,-2369.54 687.19,-2384.46 656.42,-2395 612.91,-2395 582.14,-2384.46 582.14,-2369.54 612.91,-2359 656.42,-2359 687.19,-2369.54"/>
+<text text-anchor="middle" x="634.66" y="-2373.3" font-family="Times,serif" font-size="14.00">cmForm</text>
 </a>
 </g>
 </g>
@@ -684,12 +684,12 @@
 </a>
 </g>
 </g>
-<!-- ccmake&#45;&gt;cmForm -->
+<!-- ccmake&#45;&gt;PROJNODE_cluster_CMAKE_FORM -->
 <g id="edge14" class="edge">
-<title>ccmake&#45;&gt;cmForm</title>
+<title>ccmake&#45;&gt;PROJNODE_cluster_CMAKE_FORM</title>
 <g id="a_edge14"><a xlink:title="all targets from&#10;CMAKE_FORM">
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M393.1,-2339C455.65,-2339 523.91,-2339 571.69,-2339"/>
-<polygon fill="black" stroke="black" points="571.87,-2342.5 581.87,-2339 571.87,-2335.5 571.87,-2342.5"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M393.1,-2339C485.05,-2339 589.35,-2339 622.76,-2339"/>
+<polygon fill="black" stroke="black" points="622.83,-2342.5 632.83,-2339 622.83,-2335.5 622.83,-2342.5"/>
 </a>
 </g>
 </g>
