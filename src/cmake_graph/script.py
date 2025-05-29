@@ -513,7 +513,7 @@ def cmake_build_config_graph(
     count = subsets_count[used_set_indexes]
     used_set = set(targets[i] for i in used_set_indexes)
     used_set_node = None
-    if count > frequent_deps_threshold:
+    if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
         # create an extra node
         set_target_names = "\n".join(t.target_name() for t in used_set)
         logging.debug(f"creating a target set node for:\n{set_target_names}")
