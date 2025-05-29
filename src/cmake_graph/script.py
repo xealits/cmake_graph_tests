@@ -595,7 +595,7 @@ def cmake_build_config_graph(
             root_project_cluster.add_edge(dep_edge)
             continue
 
-        if to in frequent_dependencies and not same_dir:
+        if to in frequent_dependencies and not same_dir and not full_dep:
             marker = to.get_marker()
             assert marker is not None
             target.add_dep_marker(marker)
