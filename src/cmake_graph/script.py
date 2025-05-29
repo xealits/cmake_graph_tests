@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.INFO)
 CMAKE_API_CLIENT_NAME = "targetgraph"
 CMAKE_API_PATH = ".cmake/api/v1/"
 GRAPHVIZ_LAYOUT_DEFAULT = "dot"
+GRAPHVIZ_COLOR_FOR_DIRECTORY = "#fed98e"
 
 node_shapes = defaultdict(lambda: "septagon")
 node_shapes.update(
@@ -189,7 +190,7 @@ class Directory:
             dir_source,
             label=f"📁 {dir_source}",
             labeljust="l",
-            bgcolor="yellow",
+            bgcolor=GRAPHVIZ_COLOR_FOR_DIRECTORY,
             layout=layout,
             style="dotted",
             penwidth=0,
