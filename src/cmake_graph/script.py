@@ -515,9 +515,11 @@ def cmake_build_config_graph(
         # check if it's a full-project dep
         edge_style = "dashed"
         edge_tooltip = ""
+        lhead = ""
         dep_node_name = to.get_graph().get_name()
         if full_dep:
             dep_proj_name = projects[to.project_index()].name()
+            lhead = projects[to.project_index()].get_graph().get_name()
             edge_tooltip = f"all targets from\n{dep_proj_name}"
             dep_proj_ind = to.project_index()
             dep_node_name = projects[dep_proj_ind].get_project_node()
@@ -532,6 +534,7 @@ def cmake_build_config_graph(
             dep_node_name,
             style=edge_style,
             tooltip=edge_tooltip,
+            lhead=lhead
         )
         edge_graph.add_edge(dep_edge)
 
