@@ -369,6 +369,7 @@ def cmake_build_config_graph(
     layout: str = GRAPHVIZ_LAYOUT_DEFAULT,
     perproject=True,
     frequent_deps_threshold=5,
+    rankdir="LR"
 ):
     cfg_name = codemodel["name"]
     # projects = codemodel["projects"]
@@ -381,7 +382,7 @@ def cmake_build_config_graph(
         bgcolor="white",
         layout=layout,
         compound=True,
-        rankdir="LR",
+        rankdir=rankdir,
     )
 
     projects = []
@@ -619,6 +620,13 @@ def cmake_graph_cli():
     )
 
     parser.add_argument(
+        "--rankdir",
+        type=str,
+        default="LR",
+        help=f"rankdir of the dot graph (LR, TB, BT, RL)",
+    )
+
+    parser.add_argument(
         "--no-perproject",
         action="store_true",
         help=f"don't merge per-project edges",
@@ -644,6 +652,7 @@ def cmake_graph_cli():
         layout=args.layout,
         perproject=not args.no_perproject,
         frequent_deps_threshold=args.frequent_deps_threshold,
+        rankdir=args.rankdir,
     )
     for graph in all_cfg_graphs:
         graph.write_svg(f"{graph.get_name()}.svg")
