@@ -387,7 +387,6 @@ def cmake_build_config_graph(
         layout=layout,
         compound=True,
         rankdir=rankdir,
-        stylesheet="dot.css"
     )
     root_project_cluster = None
 
@@ -730,6 +729,13 @@ def cmake_graph_cli():
         help=f"don't merge per-project edges",
     )
 
+    parser.add_argument(
+        "--stylesheet",
+        type=str,
+        default="./dot.css",
+        help=f"the CSS stylesheet files to embed into SVG",
+    )
+
     args = parser.parse_args()
 
     if args.debug:
@@ -752,9 +758,29 @@ def cmake_graph_cli():
         frequent_deps_threshold=args.frequent_deps_threshold,
         rankdir=args.rankdir,
     )
+
+    stylesheet = None
+    if isfile(args.stylesheet):
+        with open(args.stylesheet, "r") as f:
+            stylesheet = f"<style>\n{f.read()}\n</style>"
+    else:
+        logging.warn(f"did not find the stylesheet file {args.stylesheet}")
+
     for graph in all_cfg_graphs:
-        graph.write_svg(f"{graph.get_name()}.svg")
         graph.write_raw(f"{graph.get_name()}.dot")
+
+        # graph.write_svg(f"{graph.get_name()}.svg")
+        svg_text = graph.create_svg().decode("utf-8")
+        # insert the style
+        if stylesheet is not None:
+            svg_tag_start = svg_text.find("<svg")
+            svg_tag_end = svg_tag_start + svg_text[svg_tag_start:].find(">")
+            svg_text = (
+                svg_text[: svg_tag_end + 1] + stylesheet + svg_text[svg_tag_end + 1 :]
+            )
+
+        with open(f"{graph.get_name()}.svg", "w") as f:
+            f.write(svg_text)
 
 
 if __name__ == "__main__":
