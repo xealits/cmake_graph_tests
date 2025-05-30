@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 CMAKE_API_CLIENT_NAME = "targetgraph"
 CMAKE_API_PATH = ".cmake/api/v1/"
 GRAPHVIZ_LAYOUT_DEFAULT = "dot"
-GRAPHVIZ_COLOR_FOR_DIRECTORY = "#fed98e"
+GRAPHVIZ_COLOR_FOR_DIRECTORY = "#fcd5ce"
 
 node_shapes = defaultdict(lambda: "septagon")
 node_shapes.update(
@@ -137,6 +137,7 @@ class Project:
             layout=layout,
             style=style,
         )
+        pr_graph.set("class", "project")
 
         # add a dummy invisible node per cluster
         # in the case we need an edge pointing at the whole project
@@ -195,6 +196,7 @@ class Directory:
             style="dotted",
             penwidth=0,
         )
+        dir_graph.set("class", "directory")
 
         self._graph = dir_graph
         return self._graph
@@ -356,6 +358,7 @@ class Target:
             t_name, label=self._label, tooltip="\n".join(extra_info)
         )
         target_node.set_shape(node_shapes[t_type])
+        target_node.set("class", "node")
 
         self._graph = target_node
         self.set_label(self._label)
@@ -384,6 +387,7 @@ def cmake_build_config_graph(
         layout=layout,
         compound=True,
         rankdir=rankdir,
+        stylesheet="dot.css"
     )
     root_project_cluster = None
 
@@ -537,6 +541,7 @@ def cmake_build_config_graph(
             # style="invis",
             tooltip=tooltip,
         )
+        used_set_node.set("class", "node")
 
         # let's just add it to the top graph
         # root_graph.add_node(used_set_node)
@@ -551,6 +556,7 @@ def cmake_build_config_graph(
                 # tooltip=edge_tooltip,
                 # lhead=lhead
             )
+            dep_edge.set("class", "edge")
             # root_graph.add_edge(dep_edge)
             root_project_cluster.add_edge(dep_edge)
 
@@ -587,6 +593,7 @@ def cmake_build_config_graph(
                 # tooltip=edge_tooltip,
                 # lhead=lhead
             )
+            dep_edge.set("class", "edge")
             # edge_graph.add_edge(dep_edge)
             # graphviz pulls nodes into the graph where the edge is defined
             # so, since the max used node is in the root graph
@@ -627,6 +634,7 @@ def cmake_build_config_graph(
             tooltip=edge_tooltip,
             lhead=lhead,
         )
+        dep_edge.set("class", "edge")
         edge_graph.add_edge(dep_edge)
 
     return root_graph

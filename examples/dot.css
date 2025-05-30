@@ -1,0 +1,41 @@
+svg {
+    background-color: transparent
+/*
+    border: 1px solid #0E0;
+    flex-grow: 1;
+    width: 100%;
+    height: auto
+*/
+}
+
+@media (prefers-color-scheme: dark) {
+    svg {
+        background-color: #1c1b22
+    }
+    text {
+    fill: white;
+    }
+    #graph0 > polygon {
+    fill: #1c1b22;
+    }
+    .project polygon {
+    fill: #1c1b22;
+    stroke: rgb(179,179,179,0.5);
+    }
+    .directory polygon {
+        fill: rgb(179,179,179,0.5);
+    }
+    .node polygon {
+        stroke: rgb(256, 256, 256, 0.5);
+    }
+    .node ellipse {
+        stroke: rgb(256, 256, 256, 0.5);
+    }
+    .edge path {
+        stroke: rgb(256, 256, 256, 0.5);
+    }
+    .edge polygon {
+        stroke: rgb(256, 256, 256, 0.5);
+        fill: rgb(256, 256, 256, 0.5);
+    }
+}
