@@ -1,6 +1,6 @@
 [project]
 name = "cmake_graph_tests"
-version = "0.0.1"
+version = "0.1.1"
 description = "Python project to try out ideas"
 readme = "README.md"
 authors = [
