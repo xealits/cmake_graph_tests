@@ -365,8 +365,92 @@ class Target:
         return self._graph
 
 
+class Codemodel:
+    def __init__(self, codemodel_dir, cfg, perproject=True):
+        self.name = cfg["name"]
+
+        self.root_graph = pydot.Dot(
+            f"targetgraph-{self.name}",
+            graph_type="digraph",
+            bgcolor="white",
+            compound=True,
+        )
+
+        self.projects = []
+        for pr in cfg["projects"]:
+            self.projects.append(Project(pr, cfg))
+
+        self.directories = []
+        for dir_model in cfg["directories"]:
+            directory = Directory(dir_model, cfg, codemodel_dir)
+            self.directories.append(directory)
+
+        self.targets = []
+        for t_model in cfg["targets"]:
+            target = Target(
+                target_codemodel=t_model,
+                codemodel=cfg,
+                reply_dir=codemodel_dir,
+            )
+            self.targets.append(target)
+
+        # collect target-target dependencies
+        self.dependencies = []
+        for target in self.targets:
+            project = self.projects[target.project_index()]
+
+            full_project_dependencies = set()
+            for dep_ind in target.dependency_indexes():
+                # if dependencies include all targets of a project
+                # then depend on the whole project
+                # - add lhead=cluester name
+                dep_target = self.targets[dep_ind]
+                dep_proj = self.projects[dep_target.project_index()]
+                dep_proj_id = dep_proj.get_graph().get_name()
+
+                full_dep = dep_proj.full_dependence(target)
+
+                edge_style = (
+                    "invis" if dep_proj_id in full_project_dependencies else "dashed"
+                )
+                logging.debug(
+                    f"check full deps: {target.target_name()} {dep_proj_id} in {full_project_dependencies}"
+                )
+
+                dep_name = dep_target.target_name()
+                if (
+                    perproject
+                    and full_dep
+                    and target.project_index() != dep_target.project_index()
+                ):
+                    dep_name = dep_proj.get_project_node().get_name()
+                    # dep_proj_name = dep_proj.get_project_node().get_label()
+                    # edge_tooltip = f"all targets from\n{dep_proj_name}"
+
+                if target.project_index() == dep_target.project_index():
+                    # project.get_graph().add_edge(dep_edge)
+                    graph_for_edge = project.get_graph()
+                else:
+                    # graph.add_edge(dep_edge)
+                    graph_for_edge = self.root_graph
+
+                dep = Dependence(
+                    target,
+                    dep_target,
+                    graph=graph_for_edge,
+                    full_dep=(perproject and full_dep),
+                )
+                self.dependencies.append(dep)
+
+                logging.debug(
+                    f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"
+                )
+
+        pass
+
+
 def cmake_build_config_graph(
-    codemodel: dict,
+    cfg: dict,
     reply_dir: str,
     skip_types: str = "",
     skip_names: str = "",
@@ -375,24 +459,14 @@ def cmake_build_config_graph(
     frequent_deps_threshold=5,
     rankdir="LR",
 ):
-    cfg_name = codemodel["name"]
-    # projects = codemodel["projects"]
-    # directories = codemodel["directories"]
-    # targets = codemodel["targets"]
+    codemodel = Codemodel(reply_dir, cfg, perproject)
 
-    root_graph = pydot.Dot(
-        f"targetgraph-{cfg_name}",
-        graph_type="digraph",
-        bgcolor="white",
-        layout=layout,
-        compound=True,
-        rankdir=rankdir,
-    )
+    root_graph = codemodel.root_graph
+    root_graph.set_layout(layout)
+    root_graph.set_rankdir(rankdir)
     root_project_cluster = None
 
-    projects = []
-    for pr in codemodel["projects"]:
-        projects.append(Project(pr, codemodel))
+    projects = codemodel.projects
 
     for proj in projects:
         parent_index = proj.parent_index()
@@ -402,25 +476,20 @@ def cmake_build_config_graph(
         else:
             projects[parent_index].get_graph().add_subgraph(proj.get_graph())
 
-    directories = []
-    for dir_model in codemodel["directories"]:
-        directory = Directory(dir_model, codemodel, reply_dir)
-        directories.append(directory)
+    directories = codemodel.directories
+    for directory in directories:
         projects[directory.project_index()].get_graph().add_subgraph(
             directory.get_graph()
         )
 
-    targets = []
-    for t_model in codemodel["targets"]:
-        target = Target(
-            target_codemodel=t_model,
-            codemodel=codemodel,
-            reply_dir=reply_dir,
-        )
-        targets.append(target)
-
-        t_name = target.target_name()
-        t_type = target.type()
+    # TODO: check how this works?
+    # I don't add a node to the directory graph
+    # but won't it create and edge for this dependency later?
+    # targets = []
+    targets = codemodel.targets
+    for trg in codemodel.targets:
+        t_name = trg.target_name()
+        t_type = trg.type()
 
         if skip_types and re.match(skip_types, t_type):
             continue
@@ -428,61 +497,12 @@ def cmake_build_config_graph(
         if skip_names and re.match(skip_names, t_name):
             continue
 
-        directory = directories[target.directory_index()]
-        directory.get_graph().add_node(target.get_graph())
+        # targets.append(trg)
 
-    # collect target-target dependencies
-    dependencies = []
-    for target in targets:
-        project = projects[target.project_index()]
+        directory = directories[trg.directory_index()]
+        directory.get_graph().add_node(trg.get_graph())
 
-        full_project_dependencies = set()
-        for dep_ind in target.dependency_indexes():
-            # if dependencies include all targets of a project
-            # then depend on the whole project
-            # - add lhead=cluester name
-            dep_target = targets[dep_ind]
-            dep_proj = projects[dep_target.project_index()]
-            dep_proj_id = dep_proj.get_graph().get_name()
-
-            full_dep = dep_proj.full_dependence(target)
-
-            edge_style = (
-                "invis" if dep_proj_id in full_project_dependencies else "dashed"
-            )
-            logging.debug(
-                f"check full deps: {target.target_name()} {dep_proj_id} in {full_project_dependencies}"
-            )
-
-            edge_tooltip = ""
-            dep_name = dep_target.target_name()
-            if (
-                perproject
-                and full_dep
-                and target.project_index() != dep_target.project_index()
-            ):
-                dep_name = dep_proj.get_project_node().get_name()
-                dep_proj_name = dep_proj.get_project_node().get_label()
-                edge_tooltip = f"all targets from\n{dep_proj_name}"
-
-            if target.project_index() == dep_target.project_index():
-                # project.get_graph().add_edge(dep_edge)
-                graph_for_edge = project.get_graph()
-            else:
-                # graph.add_edge(dep_edge)
-                graph_for_edge = root_graph
-
-            dep = Dependence(
-                target,
-                dep_target,
-                graph=graph_for_edge,
-                full_dep=(perproject and full_dep),
-            )
-            dependencies.append(dep)
-
-            logging.debug(
-                f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"
-            )
+    dependencies = codemodel.dependencies
 
     # if there are many dependencies on a target
     # "embed" it into dependants: add a symbol to the label, or add special nodes etc
@@ -513,14 +533,14 @@ def cmake_build_config_graph(
 
     # find only the largest set for now
     used_set_indexes = max(subsets_count, key=lambda t_set: subsets_count[t_set])
-    logging.debug(f"{used_set_indexes}")
+    logging.info(f"{used_set_indexes}")
     count = subsets_count[used_set_indexes]
     used_set = set(targets[i] for i in used_set_indexes)
     used_set_node = None
     if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
         # create an extra node
         set_target_names = "\n".join(t.target_name() for t in used_set)
-        logging.debug(f"creating a target set node for:\n{set_target_names}")
+        logging.info(f"creating a target set node for:\n{set_target_names}")
 
         target_addrs = []
         for target in used_set:
