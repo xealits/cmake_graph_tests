@@ -137,6 +137,9 @@ class Target:
         self._marker = None
         self._usage_count = 0
         self._dep_markers = []
+        
+        # inverse dependency direction
+        self.dependant_targets = set()
 
     def set_label(self, label):
         self._label = label
@@ -187,6 +190,10 @@ class Target:
     def dependency_ids(self):
         return [dep["id"] for dep in self._json.get("dependencies", [])]
 
+    def depends_on_ids(self, dep_ids):
+        all_deps = self.dependency_ids()
+        return all(dep in all_deps for dep in dep_ids)
+
     def dependency_indexes(self):
         inds = []
         dep_ids = self.dependency_ids()
@@ -194,6 +201,9 @@ class Target:
             if t_model["id"] in dep_ids:
                 inds.append(i)
         return inds
+
+    def reg_dep(self, target):
+        self.dependant_targets.add(target)
 
     def target_id(self):
         return self._json["id"]
@@ -359,6 +369,9 @@ class Codemodel:
                     full_dep=(perproject and full_dep),
                 )
                 self.dependencies.append(dep)
+
+                # inverse dependence direction:
+                dep_target.reg_dep(target)
 
                 logging.debug(
                     f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"

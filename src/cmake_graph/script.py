@@ -11,7 +11,7 @@ from collections import defaultdict
 import re
 from itertools import chain
 
-from cmake_graph.codemodel import Codemodel
+from cmake_graph.codemodel import Codemodel, Dependence
 
 logging.basicConfig(level=logging.INFO)
 
@@ -85,6 +85,31 @@ def cmake_api_configs(codemodel_fname: str):
 #        codemodel_cfg["targets"],
 #    )
 
+class DepCluster:
+    def __init__(self, targets, except_deps=set()):
+        assert isinstance(targets, set)
+        dep_sets = [trg.dependant_targets - except_deps for trg in targets]
+        self.dependants = set.intersection(*dep_sets)
+        self.targets = set() if len(self.dependants) == 0 else targets
+        self._except_deps = except_deps
+
+    def score(self):
+        # links saved
+        all_cluster_links = len(self.targets) * len(self.dependants)
+        return all_cluster_links #- (len(self.targets) + len(self.dependants))
+
+    def add_dep(self, dep):
+        return DepCluster(self.targets.union({dep}), self._except_deps)
+
+    def accumulate(self, dep):
+        with_dep = self.add_dep(dep)
+        print(f"{self.score()} -> {with_dep.score()}")
+        if with_dep.score() > self.score():
+            self.dependants = with_dep.dependants
+            self.targets = with_dep.targets
+
+    def contains(self, dep_link: Dependence):
+        return dep_link.source in self.dependants and dep_link.to in self.targets
 
 def cmake_build_config_graph(
     cfg: dict,
@@ -150,9 +175,11 @@ def cmake_build_config_graph(
     frequent_dependencies = set()
     frequent_dependencies_inds = set()
     icon_generator = GenerateLetters()
-    deps_to = [dep.to for dep in dependencies]
+    #deps_to = [dep.to for dep in dependencies]
     for t_ind, target in enumerate(targets):
-        usage_count = deps_to.count(target)
+        #usage_count1 = deps_to.count(target)
+        usage_count = len(target.dependant_targets)
+        #print(f"{usage_count=} {usage_count1=}")
         if usage_count > frequent_deps_threshold:
             frequent_dependencies.add(target)
             frequent_dependencies_inds.add(t_ind)
@@ -172,11 +199,44 @@ def cmake_build_config_graph(
         subsets_count.setdefault(target_freq_set, 0)
         subsets_count[target_freq_set] += 1
 
+    #targets_by_usage = sorted(targets, key=lambda trg: trg.dependant_targets)
+    max_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
+    # TODO: the cluster finds a wider set of targets
+    # because it looks at all targets instead of just frequent_dependencies_inds
+    max_cluster = DepCluster({max_used_target})
+    print(f"{len(max_cluster.targets)=}")
+    for target in targets:
+        if target is max_used_target:
+            continue
+        max_cluster.accumulate(target)
+        print(f"{len(max_cluster.targets)=}")
+
+    print(f"{subsets_count=}")
     # find only the largest set for now
-    used_set_indexes = max(subsets_count, key=lambda t_set: subsets_count[t_set])
+    used_set_indexes_all = sorted(subsets_count, key=lambda t_set: subsets_count[t_set])
+    used_set_indexes = used_set_indexes_all[0]
     logging.info(f"{used_set_indexes}")
     count = subsets_count[used_set_indexes]
     used_set = set(targets[i] for i in used_set_indexes)
+    print(f"{len(used_set)=} {len(max_cluster.targets)=} {used_set == max_cluster.targets}")
+    if used_set != max_cluster.targets:
+        print(used_set)
+        print(count)
+        for trg in used_set:
+            print(trg.target_name())
+        print(max_cluster.targets)
+        print(max_cluster.dependants)
+        print(f"{max_cluster.score()=}")
+        print(max_used_target)
+        print(max_used_target.target_name())
+        print(len(max_used_target.dependant_targets))
+
+        #print("all subsets with max count:")
+        #for uset in used_set_indexes_all:
+        #    #if len(uset) < len(used_set):
+        #    #    break
+        #    print(f"{uset=}")
+
     used_set_node = None
     if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
         # create an extra node
@@ -230,6 +290,7 @@ def cmake_build_config_graph(
 
         edge_over_used_set = (
             used_set_node is not None and not same_dir and to in used_set
+            # TODO: is this a bug? should it be all(to) of the target?
         )
 
         # if target.target_name() == "CMakeLib" and to.target_name() == "cmbzip2":
@@ -425,7 +486,7 @@ def cmake_graph_cli():
         with open(args.stylesheet, "r") as f:
             stylesheet = f"<style>\n{f.read()}\n</style>"
     else:
-        logging.warn(f"did not find the stylesheet file {args.stylesheet}")
+        logging.warning(f"did not find the stylesheet file {args.stylesheet}")
 
     for graph in all_cfg_graphs:
         graph.write_raw(f"{graph.get_name()}.dot")
