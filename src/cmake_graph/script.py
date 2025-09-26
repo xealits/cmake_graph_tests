@@ -86,12 +86,23 @@ def cmake_api_configs(codemodel_fname: str):
 #    )
 
 class DepCluster:
-    def __init__(self, targets, except_deps=set()):
+    def __init__(self, targets, except_deps=set(), usage_threshold=0):
         assert isinstance(targets, set)
-        dep_sets = [trg.dependant_targets - except_deps for trg in targets]
-        self.dependants = set.intersection(*dep_sets)
-        self.targets = set() if len(self.dependants) == 0 else targets
+
+        dep_sets = []
+        used_targets = set()
+        for trg in targets:
+            if len(trg.dependant_targets) <= usage_threshold:
+                continue
+
+            used_targets.add(trg)
+            dep_sets.append(trg.dependant_targets - except_deps)
+
+        self._usage_threshold = usage_threshold
         self._except_deps = except_deps
+        #dep_sets = [trg.dependant_targets - except_deps for trg in targets]
+        self.dependants = set.intersection(*dep_sets)
+        self.targets = set() if len(self.dependants) == 0 else used_targets
 
     def score(self):
         # links saved
@@ -99,11 +110,14 @@ class DepCluster:
         return all_cluster_links #- (len(self.targets) + len(self.dependants))
 
     def add_dep(self, dep):
-        return DepCluster(self.targets.union({dep}), self._except_deps)
+        if len(dep.dependant_targets) > self._usage_threshold:
+            return DepCluster(self.targets.union({dep}), self._except_deps)
+
+        else:
+            return self
 
     def accumulate(self, dep):
         with_dep = self.add_dep(dep)
-        print(f"{self.score()} -> {with_dep.score()}")
         if with_dep.score() > self.score():
             self.dependants = with_dep.dependants
             self.targets = with_dep.targets
@@ -177,9 +191,7 @@ def cmake_build_config_graph(
     icon_generator = GenerateLetters()
     #deps_to = [dep.to for dep in dependencies]
     for t_ind, target in enumerate(targets):
-        #usage_count1 = deps_to.count(target)
         usage_count = len(target.dependant_targets)
-        #print(f"{usage_count=} {usage_count1=}")
         if usage_count > frequent_deps_threshold:
             frequent_dependencies.add(target)
             frequent_dependencies_inds.add(t_ind)
@@ -187,6 +199,8 @@ def cmake_build_config_graph(
             target.set_marker(icon, usage_count)
             # or use the node fontcolor
 
+    '''
+    '''
     # count usage of sub-sets
     # of dependencies
     subsets_count = {}
@@ -199,43 +213,31 @@ def cmake_build_config_graph(
         subsets_count.setdefault(target_freq_set, 0)
         subsets_count[target_freq_set] += 1
 
+    # find only the largest set for now
+    used_set_indexes_all = sorted(subsets_count, key=lambda t_set: subsets_count[t_set])
+    used_set_indexes = used_set_indexes_all[-1]
+
+    count = subsets_count[used_set_indexes]
+    used_set = set(targets[i] for i in used_set_indexes)
+
     #targets_by_usage = sorted(targets, key=lambda trg: trg.dependant_targets)
     max_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
     # TODO: the cluster finds a wider set of targets
     # because it looks at all targets instead of just frequent_dependencies_inds
-    max_cluster = DepCluster({max_used_target})
-    print(f"{len(max_cluster.targets)=}")
+    max_cluster = DepCluster({max_used_target}, usage_threshold=frequent_deps_threshold)
     for target in targets:
         if target is max_used_target:
             continue
         max_cluster.accumulate(target)
-        print(f"{len(max_cluster.targets)=}")
 
-    print(f"{subsets_count=}")
-    # find only the largest set for now
-    used_set_indexes_all = sorted(subsets_count, key=lambda t_set: subsets_count[t_set])
-    used_set_indexes = used_set_indexes_all[0]
-    logging.info(f"{used_set_indexes}")
-    count = subsets_count[used_set_indexes]
-    used_set = set(targets[i] for i in used_set_indexes)
-    print(f"{len(used_set)=} {len(max_cluster.targets)=} {used_set == max_cluster.targets}")
-    if used_set != max_cluster.targets:
-        print(used_set)
-        print(count)
-        for trg in used_set:
-            print(trg.target_name())
-        print(max_cluster.targets)
-        print(max_cluster.dependants)
-        print(f"{max_cluster.score()=}")
-        print(max_used_target)
-        print(max_used_target.target_name())
-        print(len(max_used_target.dependant_targets))
+    #used_set = max_cluster.targets
+    count = len(max_cluster.dependants) # subsets_count[used_set_indexes]
 
-        #print("all subsets with max count:")
-        #for uset in used_set_indexes_all:
-        #    #if len(uset) < len(used_set):
-        #    #    break
-        #    print(f"{uset=}")
+    if used_set == max_cluster.targets:
+        print("ALL MATCH")
+
+    if len(max_cluster.dependants) == subsets_count[used_set_indexes]:
+        print("ALL MATCH - count")
 
     used_set_node = None
     if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
