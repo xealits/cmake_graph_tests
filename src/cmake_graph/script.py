@@ -199,27 +199,6 @@ def cmake_build_config_graph(
             target.set_marker(icon, usage_count)
             # or use the node fontcolor
 
-    '''
-    '''
-    # count usage of sub-sets
-    # of dependencies
-    subsets_count = {}
-    for target in targets:
-        # target_dep_set = set(targets[i] for i in target.dependency_indexes())
-        target_dep_set = frozenset(target.dependency_indexes())
-        target_freq_set = target_dep_set.intersection(frequent_dependencies_inds)
-        if not target_freq_set:
-            continue
-        subsets_count.setdefault(target_freq_set, 0)
-        subsets_count[target_freq_set] += 1
-
-    # find only the largest set for now
-    used_set_indexes_all = sorted(subsets_count, key=lambda t_set: subsets_count[t_set])
-    used_set_indexes = used_set_indexes_all[-1]
-
-    count = subsets_count[used_set_indexes]
-    used_set = set(targets[i] for i in used_set_indexes)
-
     #targets_by_usage = sorted(targets, key=lambda trg: trg.dependant_targets)
     max_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
     # TODO: the cluster finds a wider set of targets
@@ -230,14 +209,8 @@ def cmake_build_config_graph(
             continue
         max_cluster.accumulate(target)
 
-    #used_set = max_cluster.targets
-    count = len(max_cluster.dependants) # subsets_count[used_set_indexes]
-
-    if used_set == max_cluster.targets:
-        print("ALL MATCH")
-
-    if len(max_cluster.dependants) == subsets_count[used_set_indexes]:
-        print("ALL MATCH - count")
+    used_set = max_cluster.targets
+    count = len(max_cluster.dependants)
 
     used_set_node = None
     if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
