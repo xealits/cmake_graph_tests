@@ -151,6 +151,19 @@ class DepCluster:
 
         return cluster_node
 
+def find_cluster(targets, except_deps=set(), usage_threshold=0):
+    assert isinstance(targets, set)
+
+    #most_used_target = max(targets, key=lambda trg: len(trg.dependant_targets - except_deps))
+    most_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
+    cluster = DepCluster({most_used_target}, except_deps, usage_threshold)
+
+    targets.remove(most_used_target)
+    for trg in targets:
+        cluster.accumulate(trg)
+
+    return cluster
+
 def cmake_build_config_graph(
     cfg: dict,
     reply_dir: str,
@@ -225,15 +238,7 @@ def cmake_build_config_graph(
             target.set_marker(icon, usage_count)
             # or use the node fontcolor
 
-    #targets_by_usage = sorted(targets, key=lambda trg: trg.dependant_targets)
-    max_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
-    # TODO: the cluster finds a wider set of targets
-    # because it looks at all targets instead of just frequent_dependencies_inds
-    max_cluster = DepCluster({max_used_target}, usage_threshold=frequent_deps_threshold)
-    for target in targets:
-        if target is max_used_target:
-            continue
-        max_cluster.accumulate(target)
+    max_cluster = find_cluster(set(targets), usage_threshold=frequent_deps_threshold)
 
     #clusters = set(max_cluster)
     #cluster_nodes = set()
