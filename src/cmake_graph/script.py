@@ -125,6 +125,32 @@ class DepCluster:
     def contains(self, dep_link: Dependence):
         return dep_link.source in self.dependants and dep_link.to in self.targets
 
+    def get_graph(self):
+        target_addrs = []
+        for target in self.targets:
+            #proj_name = projects[target.project_index()].name()
+            proj_name = target.project_name()
+            t_marker = target.get_marker()
+            assert t_marker is not None
+            target_addrs.append((proj_name, target.target_name(), t_marker))
+        target_addrs.sort(key=lambda addr: addr[0])
+        tooltip = "\n".join(
+            f"{i:2} {tm} {pn}: {tn}" for i, (pn, tn, tm) in enumerate(target_addrs)
+        )
+
+        used_trgs = len(self.targets)
+        used_by = len(self.dependants)
+        cluster_node = pydot.Node(
+            "max_used_set",
+            label=f"set of {used_trgs} targets that are used together by {used_by}",
+            shape="circle",
+            # style="invis",
+            tooltip=tooltip,
+        )
+        cluster_node.set("class", "node")
+
+        return cluster_node
+
 def cmake_build_config_graph(
     cfg: dict,
     reply_dir: str,
@@ -209,41 +235,21 @@ def cmake_build_config_graph(
             continue
         max_cluster.accumulate(target)
 
-    used_set = max_cluster.targets
-    count = len(max_cluster.dependants)
-
+    #clusters = set(max_cluster)
+    #cluster_nodes = set()
     used_set_node = None
-    if count > frequent_deps_threshold and len(used_set) > frequent_deps_threshold:
+    if len(max_cluster.dependants) > frequent_deps_threshold and len(max_cluster.targets) > frequent_deps_threshold:
         # create an extra node
-        set_target_names = "\n".join(t.target_name() for t in used_set)
+        set_target_names = "\n".join(t.target_name() for t in max_cluster.targets)
         logging.info(f"creating a target set node for:\n{set_target_names}")
-
-        target_addrs = []
-        for target in used_set:
-            proj_name = projects[target.project_index()].name()
-            t_marker = target.get_marker()
-            assert t_marker is not None
-            target_addrs.append((proj_name, target.target_name(), t_marker))
-        target_addrs.sort(key=lambda addr: addr[0])
-        tooltip = "\n".join(
-            f"{i:2} {tm} {pn}: {tn}" for i, (pn, tn, tm) in enumerate(target_addrs)
-        )
-
-        used_set_node = pydot.Node(
-            "max_used_set",
-            label=f"set of {len(used_set)} targets that are used together by {count}",
-            shape="circle",
-            # style="invis",
-            tooltip=tooltip,
-        )
-        used_set_node.set("class", "node")
 
         # let's just add it to the top graph
         # root_graph.add_node(used_set_node)
+        used_set_node = max_cluster.get_graph()
         root_project_cluster.add_node(used_set_node)
 
         # add edges from the node
-        for target in used_set:
+        for target in max_cluster.targets:
             dep_edge = pydot.Edge(
                 used_set_node.get_name(),
                 target.get_graph().get_name(),
@@ -264,7 +270,7 @@ def cmake_build_config_graph(
         same_dir = target.directory_index() == to.directory_index()
 
         edge_over_used_set = (
-            used_set_node is not None and not same_dir and to in used_set
+            used_set_node is not None and not same_dir and to in max_cluster.targets
             # TODO: is this a bug? should it be all(to) of the target?
         )
 

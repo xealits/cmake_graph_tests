@@ -122,7 +122,7 @@ class Directory:
 
 
 class Target:
-    def __init__(self, target_codemodel, codemodel, reply_dir):
+    def __init__(self, target_codemodel, codemodel, reply_dir, full_codemodel):
         json_fpath = join(reply_dir, target_codemodel["jsonFile"])
         assert isfile(json_fpath)
         with open(json_fpath, "r") as f:
@@ -213,6 +213,11 @@ class Target:
 
     def project_index(self):
         return self._target_codemodel["projectIndex"]
+
+    def project_name(self):
+        prj_ind = self._target_codemodel["projectIndex"]
+        prj_name = self._codemodel["projects"][prj_ind]["name"]
+        return prj_name
 
     def directory_index(self):
         return self._target_codemodel["directoryIndex"]
@@ -319,6 +324,7 @@ class Codemodel:
                 target_codemodel=t_model,
                 codemodel=cfg,
                 reply_dir=codemodel_dir,
+                full_codemodel=self
             )
             self.targets.append(target)
 
