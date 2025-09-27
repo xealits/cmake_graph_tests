@@ -40,8 +40,9 @@ class GenerateLetters:
     greek_symbols = (chr(c) for c in greek_codes)
     greek_letters = [c for c in greek_symbols if c.isalpha()]
 
-    def __init__(self):
+    def __init__(self, prefix = None):
         self._index = 0
+        self._prefix = "" if prefix is None else prefix
 
     def next(self):
         if self._index > len(self.greek_letters):
@@ -49,7 +50,7 @@ class GenerateLetters:
 
         letter = self.greek_letters[self._index]
         self._index += 1
-        return letter
+        return self._prefix + letter
 
 
 def cmake_api_setup_query(build_dir: str):
@@ -85,23 +86,28 @@ def cmake_api_configs(codemodel_fname: str):
 #        codemodel_cfg["targets"],
 #    )
 
+cluster_names = GenerateLetters("cluster_")
+
 class DepCluster:
     def __init__(self, targets, except_deps=set(), usage_threshold=0):
         assert isinstance(targets, set)
+        assert isinstance(except_deps, set)
 
         dep_sets = []
         used_targets = set()
         for trg in targets:
-            if len(trg.dependant_targets) <= usage_threshold:
+            deps = trg.dependant_targets - except_deps
+            if not deps or len(trg.dependant_targets) <= usage_threshold:
                 continue
 
             used_targets.add(trg)
-            dep_sets.append(trg.dependant_targets - except_deps)
+            dep_sets.append(deps)
 
         self._usage_threshold = usage_threshold
         self._except_deps = except_deps
-        #dep_sets = [trg.dependant_targets - except_deps for trg in targets]
-        self.dependants = set.intersection(*dep_sets)
+        self._graph = None
+
+        self.dependants = set() if len(dep_sets) == 0 else set.intersection(*dep_sets)
         self.targets = set() if len(self.dependants) == 0 else used_targets
 
     def score(self):
@@ -109,15 +115,15 @@ class DepCluster:
         all_cluster_links = len(self.targets) * len(self.dependants)
         return all_cluster_links #- (len(self.targets) + len(self.dependants))
 
-    def add_dep(self, dep):
-        if len(dep.dependant_targets) > self._usage_threshold:
-            return DepCluster(self.targets.union({dep}), self._except_deps)
+    def add_trg(self, trg):
+        if len(trg.dependant_targets) > self._usage_threshold:
+            return DepCluster(self.targets.union({trg}), self._except_deps)
 
         else:
             return self
 
-    def accumulate(self, dep):
-        with_dep = self.add_dep(dep)
+    def accumulate(self, trg):
+        with_dep = self.add_trg(trg)
         if with_dep.score() > self.score():
             self.dependants = with_dep.dependants
             self.targets = with_dep.targets
@@ -126,6 +132,9 @@ class DepCluster:
         return dep_link.source in self.dependants and dep_link.to in self.targets
 
     def get_graph(self):
+        if self._graph is not None:
+            return self._graph
+
         target_addrs = []
         for target in self.targets:
             #proj_name = projects[target.project_index()].name()
@@ -134,35 +143,83 @@ class DepCluster:
             assert t_marker is not None
             target_addrs.append((proj_name, target.target_name(), t_marker))
         target_addrs.sort(key=lambda addr: addr[0])
-        tooltip = "\n".join(
+
+        tooltip = "users:\n"
+        tooltip += "\n".join(str(trg.target_name()) for trg in self.dependants)
+
+        tooltip += "\ntargets:\n"
+        tooltip += "\n".join(
             f"{i:2} {tm} {pn}: {tn}" for i, (pn, tn, tm) in enumerate(target_addrs)
         )
 
         used_trgs = len(self.targets)
         used_by = len(self.dependants)
         cluster_node = pydot.Node(
-            "max_used_set",
+            f"{cluster_names.next()} {used_trgs}x{used_by}",
             label=f"set of {used_trgs} targets that are used together by {used_by}",
             shape="circle",
             # style="invis",
             tooltip=tooltip,
         )
         cluster_node.set("class", "node")
+        self._graph = cluster_node
 
-        return cluster_node
+        return self._graph
 
 def find_cluster(targets, except_deps=set(), usage_threshold=0):
-    assert isinstance(targets, set)
+    assert isinstance(targets, set) and len(targets) > 0
 
-    #most_used_target = max(targets, key=lambda trg: len(trg.dependant_targets - except_deps))
-    most_used_target = max(targets, key=lambda trg: len(trg.dependant_targets))
-    cluster = DepCluster({most_used_target}, except_deps, usage_threshold)
+    most_used_targets = sorted(targets, key=lambda trg: len(trg.dependant_targets), reverse=True)
+    cluster = DepCluster({most_used_targets[0]}, except_deps, usage_threshold)
 
-    targets.remove(most_used_target)
-    for trg in targets:
+    for trg in most_used_targets[1:]:
         cluster.accumulate(trg)
 
+    logging.info(f"try the flat case {len(except_deps)=}")
+    # one dependant has many targets
+    all_dependants = set.union(*[trg.dependant_targets for trg in targets]) - except_deps
+    if not all_dependants:
+        return cluster
+
+    most_dependant = max(all_dependants, key=lambda trg: len(trg.dependency_targets))
+    logging.info(f"{str(most_dependant)=} {len(most_dependant.dependency_targets)=}")
+    within_targets = set.intersection(most_dependant.dependency_targets, targets)
+    flat_cluster = DepCluster(within_targets, except_deps, usage_threshold)
+
+    if flat_cluster.score() > cluster.score():
+        logging.info(f"{flat_cluster.score()=} {len(flat_cluster.dependants)=} {len(flat_cluster.targets)=}")
+        #logging.info(f"{[str(trg) for trg in flat_cluster.dependants]}")
+        return flat_cluster
+
     return cluster
+
+def find_all_clusters(targets, except_deps=set(), usage_threshold=0):
+    assert isinstance(targets, set)
+
+    cur_cluster = find_cluster(targets, except_deps, usage_threshold)
+    logging.info(f"{cur_cluster.score()=} {len(cur_cluster.dependants)=} {len(cur_cluster.targets)=}")
+    if cur_cluster.score() < usage_threshold ** 2:
+        return []
+
+    # split by covered dependants
+    # look at other targets
+    other_targets = targets - cur_cluster.targets
+    # but make sure to stay within the dependants of the current cluster
+    all_dependants = set.union(*[trg.dependant_targets for trg in targets])
+    new_except_deps = all_dependants - cur_cluster.dependants
+
+    logging.info("other targets")
+    clusters_in_same_dependants = find_all_clusters(other_targets,
+                                                    set.union(except_deps, new_except_deps),
+                                                    usage_threshold)
+
+    # and at other dependants
+    logging.info("other dependants")
+    clusters_in_other_dependants = find_all_clusters(targets,
+                                                     set.union(except_deps, cur_cluster.dependants),
+                                                     usage_threshold)
+
+    return [cur_cluster] + clusters_in_same_dependants + clusters_in_other_dependants
 
 def cmake_build_config_graph(
     cfg: dict,
@@ -238,12 +295,18 @@ def cmake_build_config_graph(
             target.set_marker(icon, usage_count)
             # or use the node fontcolor
 
-    max_cluster = find_cluster(set(targets), usage_threshold=frequent_deps_threshold)
+    #max_cluster = find_cluster(set(targets), usage_threshold=frequent_deps_threshold)
+    #print(f"{max_cluster.score()=}")
+    all_clusters = find_all_clusters(set(targets), usage_threshold=frequent_deps_threshold)
+
+    #if all_clusters:
+    #    max_cluster = all_clusters[0]
 
     #clusters = set(max_cluster)
     #cluster_nodes = set()
-    used_set_node = None
-    if len(max_cluster.dependants) > frequent_deps_threshold and len(max_cluster.targets) > frequent_deps_threshold:
+    #used_set_node = None
+    #if all_clusters and max_cluster.score() > frequent_deps_threshold ** 2:
+    for max_cluster in all_clusters:
         # create an extra node
         set_target_names = "\n".join(t.target_name() for t in max_cluster.targets)
         logging.info(f"creating a target set node for:\n{set_target_names}")
@@ -270,28 +333,33 @@ def cmake_build_config_graph(
     # make the per-project edges
     # and edges to the sets of frequent dependencies
     already_covered_full_proj_deps = set()
-    used_set_edges = set()
+    graphed_used_set_edges = set()
     for target, to, edge_graph, full_dep in dependencies:
         same_dir = target.directory_index() == to.directory_index()
 
-        edge_over_used_set = (
-            used_set_node is not None and not same_dir and to in max_cluster.targets
-            # TODO: is this a bug? should it be all(to) of the target?
-        )
+        #if "CMakeLib" in target.target_name():
+        #    print(f"{target.target_name()}")
+
+        # check if the dependency belongs to one of clusters
+        max_cluster = None
+        for cluster in all_clusters:
+            if target in cluster.dependants and to in cluster.targets:
+                max_cluster = cluster
+                break
 
         # if target.target_name() == "CMakeLib" and to.target_name() == "cmbzip2":
         #    logging.info()
 
-        if edge_over_used_set:
+        if max_cluster and not same_dir:
             edge_from = target.get_graph()
-            edge_to = used_set_node
+            edge_to = max_cluster.get_graph()
 
             used_set_edge = (edge_from, edge_to)
 
-            if used_set_edge in used_set_edges:
+            if used_set_edge in graphed_used_set_edges:
                 continue
             else:
-                used_set_edges.add(used_set_edge)
+                graphed_used_set_edges.add(used_set_edge)
 
             dep_edge = pydot.Edge(
                 edge_from.get_name(),
@@ -322,6 +390,9 @@ def cmake_build_config_graph(
         edge_tooltip = ""
         lhead = ""
         dep_node_name = to.get_graph().get_name()
+        #if "CMakeLib" in target.target_name():
+        #    print(f"{target.target_name()} deps: {dep_node_name}")
+
         if full_dep:
             dep_proj_name = projects[to.project_index()].name()
             lhead = projects[to.project_index()].get_graph().get_name()

@@ -140,6 +140,10 @@ class Target:
         
         # inverse dependency direction
         self.dependant_targets = set()
+        self.dependency_targets = set()
+
+    def __str__(self):
+        return self.target_name()
 
     def set_label(self, label):
         self._label = label
@@ -202,8 +206,11 @@ class Target:
                 inds.append(i)
         return inds
 
-    def reg_dep(self, target):
+    def reg_dependant(self, target):
         self.dependant_targets.add(target)
+
+    def reg_dependency(self, target):
+        self.dependency_targets.add(target)
 
     def target_id(self):
         return self._json["id"]
@@ -260,6 +267,7 @@ class Target:
 
         # create the node and dependencies
         extra_info = []
+        extra_info.append(f"{t_name=}")
         extra_info.append(f"type={t_type}")
 
         definition = self.find_cmake_define()
@@ -342,7 +350,7 @@ class Codemodel:
                 dep_proj = self.projects[dep_target.project_index()]
                 dep_proj_id = dep_proj.get_graph().get_name()
 
-                full_dep = dep_proj.full_dependence(target)
+                full_dep = dep_proj.full_dependence(target) and len(dep_proj.target_indexes()) > 1
 
                 edge_style = (
                     "invis" if dep_proj_id in full_project_dependencies else "dashed"
@@ -377,7 +385,8 @@ class Codemodel:
                 self.dependencies.append(dep)
 
                 # inverse dependence direction:
-                dep_target.reg_dep(target)
+                dep_target.reg_dependant(target)
+                target.reg_dependency(dep_target)
 
                 logging.debug(
                     f"Added node dep: {target.target_name()} {dep_name} : {target.dependency_indexes()} - {dep_proj.target_indexes()}"
