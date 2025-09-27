@@ -316,8 +316,28 @@ def cmake_build_config_graph(
         used_set_node = max_cluster.get_graph()
         root_project_cluster.add_node(used_set_node)
 
-        # add edges from the node
-        for target in max_cluster.targets:
+        # add edges from the cluster node
+        # if some of cluster targets are contained in another cluster
+        # then point at that one
+        left_targets = set(max_cluster.targets)
+        for other_cluster in all_clusters:
+            if other_cluster is max_cluster:
+                continue
+
+            if all(trg in left_targets for trg in other_cluster.targets):
+                dep_cluster = pydot.Edge(
+                    used_set_node.get_name(),
+                    other_cluster.get_graph().get_name(),
+                    style="dotted",
+                    # tooltip=edge_tooltip,
+                    # lhead=lhead
+                )
+                dep_cluster.set("class", "edge")
+                root_project_cluster.add_edge(dep_cluster)
+
+                left_targets -= other_cluster.targets
+
+        for target in left_targets:
             dep_edge = pydot.Edge(
                 used_set_node.get_name(),
                 target.get_graph().get_name(),
