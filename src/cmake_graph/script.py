@@ -42,15 +42,23 @@ class GenerateLetters:
 
     def __init__(self, prefix = None):
         self._index = 0
+        self._number = 0
         self._prefix = "" if prefix is None else prefix
 
     def next(self):
         if self._index > len(self.greek_letters):
             raise RuntimeError("ran out of letters!")
 
+        if self._index >= len(self.greek_letters):
+            self._number += 1
+            self._index = 0
+
         letter = self.greek_letters[self._index]
         self._index += 1
-        return self._prefix + letter
+        symbol = self._prefix + letter
+        if self._number > 0:
+            symbol += str(self._number)
+        return symbol
 
 
 def cmake_api_setup_query(build_dir: str):
@@ -268,7 +276,12 @@ def cmake_build_config_graph(
         if skip_types and re.match(skip_types, t_type):
             continue
 
+        if "rocksdb_check" in t_name:
+            print("AAAA")
+
         if skip_names and re.match(skip_names, t_name):
+            if "rocksdb_check" in t_name:
+                print("skipping rocksdb_check target")
             continue
 
         # targets.append(trg)
@@ -278,7 +291,17 @@ def cmake_build_config_graph(
         directory.get_graph().add_node(tgraph)
         tgraph.set_shape(node_shapes[t_type])
 
-    dependencies = codemodel.dependencies
+    dependencies = []
+    for dep in codemodel.dependencies:
+        if skip_names and re.match(skip_names, dep.to.target_name()):
+            continue
+        if skip_names and re.match(skip_names, dep.source.target_name()):
+            if "rocksdb_check" in dep.source.target_name():
+                print("skipping rocksdb_check target in deps")
+                # TODO: how come it is in dependencies, but there is no such target?
+                # the root node targets are missing?
+            continue
+        dependencies.append(dep)
 
     # if there are many dependencies on a target
     # "embed" it into dependants: add a symbol to the label, or add special nodes etc

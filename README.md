@@ -15,3 +15,6 @@ ls targetgraph-Release.svg
 
 Targets in CMake:
 ![Targets of cmake](./examples/targetgraph-_cmake.svg)
+
+Targets in [rocksdb](https://github.com/facebook/rocksdb) without tests:
+![Targets of cmake](./examples/targetgraph-Debug_rocksdb_notests.svg)
