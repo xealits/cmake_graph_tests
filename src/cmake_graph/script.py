@@ -144,21 +144,22 @@ class DepCluster:
             return self._graph
 
         target_addrs = []
+        target_i = 0
         for target in self.targets:
-            #proj_name = projects[target.project_index()].name()
             proj_name = target.project_name()
             t_marker = target.get_marker()
+            t_name = target.target_name()
+            t_dir = target.directory_name()
             assert t_marker is not None
-            target_addrs.append((proj_name, target.target_name(), t_marker))
-        target_addrs.sort(key=lambda addr: addr[0])
+            addr_str = f"{target_i:2} {proj_name} {t_dir}: {t_name} {t_marker}"
+            target_i += 1
+            target_addrs.append(addr_str)
 
         tooltip = "users:\n"
         tooltip += "\n".join(str(trg.target_name()) for trg in self.dependants)
 
         tooltip += "\ntargets:\n"
-        tooltip += "\n".join(
-            f"{i:2} {tm} {pn}: {tn}" for i, (pn, tn, tm) in enumerate(target_addrs)
-        )
+        tooltip += "\n".join(target_addrs)
 
         used_trgs = len(self.targets)
         used_by = len(self.dependants)
@@ -175,7 +176,7 @@ class DepCluster:
         return self._graph
 
 def find_cluster(targets, except_deps=set(), usage_threshold=0):
-    assert isinstance(targets, set) and len(targets) > 0
+    assert isinstance(targets, set) and len(targets) > 0, f"{type(targets)=} {len(targets)=}"
 
     most_used_targets = sorted(targets, key=lambda trg: len(trg.dependant_targets), reverse=True)
     cluster = DepCluster({most_used_targets[0]}, except_deps, usage_threshold)
@@ -201,8 +202,10 @@ def find_cluster(targets, except_deps=set(), usage_threshold=0):
 
     return cluster
 
-def find_all_clusters(targets, except_deps=set(), usage_threshold=0):
+def find_all_clusters(targets, except_deps=set(), usage_threshold=0) -> list:
     assert isinstance(targets, set)
+    if not targets:
+        return []
 
     cur_cluster = find_cluster(targets, except_deps, usage_threshold)
     logging.info(f"{cur_cluster.score()=} {len(cur_cluster.dependants)=} {len(cur_cluster.targets)=}")
@@ -238,6 +241,7 @@ def cmake_build_config_graph(
     perproject=True,
     frequent_deps_threshold=5,
     rankdir="LR",
+    cluster_dirs=False
 ):
     codemodel = Codemodel(reply_dir, cfg, perproject)
 
@@ -320,7 +324,19 @@ def cmake_build_config_graph(
 
     #max_cluster = find_cluster(set(targets), usage_threshold=frequent_deps_threshold)
     #print(f"{max_cluster.score()=}")
-    all_clusters = find_all_clusters(set(targets), usage_threshold=frequent_deps_threshold)
+
+    # search for clusters within directories
+    all_clusters = []
+    if cluster_dirs:
+        for directory in directories:
+            trgs = directory.targets
+            dir_clusters = find_all_clusters(set(trgs), usage_threshold=frequent_deps_threshold)
+            all_clusters += dir_clusters
+
+    else:
+        all_clusters = find_all_clusters(set(targets), usage_threshold=frequent_deps_threshold)
+
+    # TODO then I will need to make clustering on top of the per-directory clusters?
 
     #if all_clusters:
     #    max_cluster = all_clusters[0]
@@ -552,6 +568,12 @@ def cmake_graph_cli():
     )
 
     parser.add_argument(
+        "--cluster-dirs",
+        action="store_true",
+        help="try to cluster per-directory first",
+    )
+
+    parser.add_argument(
         "--stylesheet",
         type=str,
         default="./dot.css",
@@ -579,6 +601,7 @@ def cmake_graph_cli():
         perproject=not args.no_perproject,
         frequent_deps_threshold=args.frequent_deps_threshold,
         rankdir=args.rankdir,
+        cluster_dirs=args.cluster_dirs
     )
 
     stylesheet = None

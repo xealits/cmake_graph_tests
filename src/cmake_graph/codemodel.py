@@ -80,6 +80,7 @@ class Directory:
         self._directory_codemodel = directory_codemodel
         self._codemodel = codemodel
         self._graph = None
+        self.targets = set()
 
         json_fpath = join(reply_dir, directory_codemodel["jsonFile"])
         assert isfile(json_fpath)
@@ -94,6 +95,9 @@ class Directory:
 
     def target_indexes(self):
         return self._directory_codemodel["targetIndexes"]
+
+    def reg_target(self, target):
+        self.targets.add(target)
 
     def project_index(self):
         return self._directory_codemodel["projectIndex"]
@@ -229,6 +233,10 @@ class Target:
     def directory_index(self):
         return self._target_codemodel["directoryIndex"]
 
+    def directory_name(self):
+        ind = self.directory_index()
+        return self._codemodel["directories"][ind]["source"]
+
     def target_install_paths(self):
         install = self._json.get("install")
         if install is None:
@@ -340,6 +348,8 @@ class Codemodel:
         self.dependencies = []
         for target in self.targets:
             project = self.projects[target.project_index()]
+            directory = self.directories[target.directory_index()]
+            directory.reg_target(target)
 
             full_project_dependencies = set()
             for dep_ind in target.dependency_indexes():
