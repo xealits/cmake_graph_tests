@@ -114,6 +114,7 @@ class DepCluster:
         self._usage_threshold = usage_threshold
         self._except_deps = except_deps
         self._graph = None
+        self.node_name = None
 
         self.dependants = set() if len(dep_sets) == 0 else set.intersection(*dep_sets)
         self.targets = set() if len(self.dependants) == 0 else used_targets
@@ -163,8 +164,9 @@ class DepCluster:
 
         used_trgs = len(self.targets)
         used_by = len(self.dependants)
+        self.node_name = f"{cluster_names.next()} {used_trgs}x{used_by}"
         cluster_node = pydot.Node(
-            f"{cluster_names.next()} {used_trgs}x{used_by}",
+            self.node_name,
             label=f"set of {used_trgs} targets that are used together by {used_by}",
             shape="circle",
             # style="invis",
@@ -353,7 +355,14 @@ def cmake_build_config_graph(
         # let's just add it to the top graph
         # root_graph.add_node(used_set_node)
         used_set_node = max_cluster.get_graph()
-        root_project_cluster.add_node(used_set_node)
+        #root_project_cluster.add_node(used_set_node)
+        cluster_parent_node = root_project_cluster
+        for directory in directories:
+            if all(trg in directory.targets for trg in max_cluster.targets):
+                cluster_parent_node = directory.get_graph()
+                break
+
+        cluster_parent_node.add_node(used_set_node)
 
         # add edges from the cluster node
         # if some of cluster targets are contained in another cluster
@@ -393,24 +402,32 @@ def cmake_build_config_graph(
     # and edges to the sets of frequent dependencies
     already_covered_full_proj_deps = set()
     graphed_used_set_edges = set()
-    for target, to, edge_graph, full_dep in dependencies:
-        same_dir = target.directory_index() == to.directory_index()
+    for source, to, edge_graph, full_dep in dependencies:
+        same_dir = source.directory_index() == to.directory_index()
 
-        #if "CMakeLib" in target.target_name():
-        #    print(f"{target.target_name()}")
+        #if "CMakeLib" in source.target_name():
+        #    print(f"{source.target_name()}")
 
         # check if the dependency belongs to one of clusters
         max_cluster = None
         for cluster in all_clusters:
-            if target in cluster.dependants and to in cluster.targets:
+            if source in cluster.dependants and to in cluster.targets:
                 max_cluster = cluster
                 break
 
-        # if target.target_name() == "CMakeLib" and to.target_name() == "cmbzip2":
+        # if source.target_name() == "CMakeLib" and to.target_name() == "cmbzip2":
         #    logging.info()
 
-        if max_cluster and not same_dir:
-            edge_from = target.get_graph()
+        # check the cluster directory
+        same_dir_cluster = False
+        if max_cluster:
+            to_dir = to.directory_index()
+            same_dir_cluster = all(trg.directory_index() == to_dir for trg in max_cluster.targets)
+
+        # TODO: I avoid an edge to the cluster, when it is outside the directory of both targets
+        # in that case, I should also just remove the targets from the cluster?
+        if max_cluster and (not same_dir or same_dir_cluster):
+            edge_from = source.get_graph()
             edge_to = max_cluster.get_graph()
 
             used_set_edge = (edge_from, edge_to)
@@ -439,7 +456,7 @@ def cmake_build_config_graph(
         if to in frequent_dependencies and not same_dir and not full_dep:
             marker = to.get_marker()
             assert marker is not None
-            target.add_dep_marker(marker)
+            source.add_dep_marker(marker)
             continue
 
         # not frequent dependencies get turned into edges
@@ -449,8 +466,8 @@ def cmake_build_config_graph(
         edge_tooltip = ""
         lhead = ""
         dep_node_name = to.get_graph().get_name()
-        #if "CMakeLib" in target.target_name():
-        #    print(f"{target.target_name()} deps: {dep_node_name}")
+        #if "CMakeLib" in source.target_name():
+        #    print(f"{source.target_name()} deps: {dep_node_name}")
 
         if full_dep:
             dep_proj_name = projects[to.project_index()].name()
@@ -459,13 +476,13 @@ def cmake_build_config_graph(
             dep_proj_ind = to.project_index()
             dep_node_name = projects[dep_proj_ind].get_project_node()
 
-            if (target, dep_proj_ind) in already_covered_full_proj_deps:
+            if (source, dep_proj_ind) in already_covered_full_proj_deps:
                 edge_style = "invis"
             else:
-                already_covered_full_proj_deps.add((target, dep_proj_ind))
+                already_covered_full_proj_deps.add((source, dep_proj_ind))
 
         dep_edge = pydot.Edge(
-            target.target_name(),
+            source.target_name(),
             dep_node_name,
             style=edge_style,
             tooltip=edge_tooltip,
